@@ -1,49 +1,56 @@
 import { motion } from 'motion/react'
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 import { toast } from 'sonner'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useWriteStore } from '../stores/write-store'
 import { usePreviewStore } from '../stores/preview-store'
 import { usePublish } from '../hooks/use-publish'
 
 export function WriteActions() {
-	const { loading, mode, form, loadBlogForEdit, originalSlug, updateForm } = useWriteStore()
+	const { loading, mode, form, originalSlug, updateForm } = useWriteStore()
 	const { openPreview } = usePreviewStore()
 	const { isAuth, onChoosePrivateKey, onPublish, onDelete } = usePublish()
-	const [saving, setSaving] = useState(false)
 	const keyInputRef = useRef<HTMLInputElement>(null)
 	const mdInputRef = useRef<HTMLInputElement>(null)
 	const router = useRouter()
+	const searchParams = useSearchParams()
+	const returnTo = searchParams.get('returnTo') || ''
 
-	const handleImportOrPublish = () => {
+	const handleImportOrPublish = async () => {
 		if (!isAuth) {
 			keyInputRef.current?.click()
-		} else {
-			onPublish()
+			return
+		}
+
+		const success = await onPublish()
+		if (success && returnTo.startsWith('/')) {
+			router.push(returnTo)
 		}
 	}
 
 	const handleCancel = () => {
-		if (!window.confirm('放弃本次修改吗？')) {
+		if (!window.confirm('确定要放弃当前编辑内容吗？')) {
 			return
 		}
 		if (mode === 'edit' && originalSlug) {
 			router.push(`/blog/${originalSlug}`)
+		} else if (returnTo.startsWith('/')) {
+			router.push(returnTo)
 		} else {
 			router.push('/')
 		}
 	}
 
-	const buttonText = isAuth ? (mode === 'edit' ? '更新' : '发布') : '导入密钥'
+	const buttonText = isAuth ? (mode === 'edit' ? '保存修改' : '发布文章') : '导入密钥'
 
 	const handleDelete = () => {
 		if (!isAuth) {
 			toast.info('请先导入密钥')
 			return
 		}
-		const confirmMsg = form?.title ? `确定删除《${form.title}》吗？该操作不可恢复。` : '确定删除当前文章吗？该操作不可恢复。'
+		const confirmMsg = form?.title ? `确定要删除《${form.title}》吗？此操作不可恢复。` : '确定要删除当前文章吗？此操作不可恢复。'
 		if (window.confirm(confirmMsg)) {
-			onDelete()
+			void onDelete()
 		}
 	}
 
@@ -58,9 +65,9 @@ export function WriteActions() {
 		try {
 			const text = await file.text()
 			updateForm({ md: text })
-			toast.success('已导入 Markdown 文件')
+			toast.success('Markdown 已导入')
 		} catch (error) {
-			toast.error('导入失败，请重试')
+			toast.error('导入 Markdown 失败')
 		} finally {
 			if (e.currentTarget) e.currentTarget.value = ''
 		}
@@ -99,12 +106,7 @@ export function WriteActions() {
 							删除
 						</motion.button>
 
-						<motion.button
-							whileHover={{ scale: 1.05 }}
-							whileTap={{ scale: 0.95 }}
-							onClick={handleCancel}
-							disabled={saving}
-							className='bg-card rounded-xl border px-4 py-2 text-sm'>
+						<motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={handleCancel} disabled={loading} className='bg-card rounded-xl border px-4 py-2 text-sm'>
 							取消
 						</motion.button>
 					</>
@@ -137,7 +139,7 @@ export function WriteActions() {
 					whileTap={{ scale: 0.95 }}
 					className='brand-btn px-6'
 					disabled={loading}
-					onClick={handleImportOrPublish}>
+					onClick={() => void handleImportOrPublish()}>
 					{buttonText}
 				</motion.button>
 			</ul>

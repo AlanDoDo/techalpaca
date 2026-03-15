@@ -1,4 +1,4 @@
-import { toBase64Utf8, getRef, createTree, createCommit, updateRef, createBlob, type TreeItem } from '@/lib/github-client'
+import { toBase64Utf8, getRef, createTree, createCommit, updateRef, createBlob, readTextFileFromRepo, type TreeItem } from '@/lib/github-client'
 import { fileToBase64NoPrefix, hashFileSHA256 } from '@/lib/file-utils'
 import { prepareBlogsIndex } from '@/lib/blog-index'
 import { getAuthToken } from '@/lib/auth'
@@ -23,6 +23,32 @@ export type PushBlogParams = {
 	images?: ImageItem[]
 	mode?: 'create' | 'edit'
 	originalSlug?: string | null
+}
+
+async function prepareCategoriesConfig(token: string, owner: string, repo: string, branch: string, category?: string) {
+	const nextCategory = category?.trim()
+	if (!nextCategory) return null
+
+	let list: string[] = []
+	try {
+		const txt = await readTextFileFromRepo(token, owner, repo, 'public/blogs/categories.json', branch)
+		if (txt) {
+			const parsed = JSON.parse(txt)
+			if (Array.isArray(parsed)) {
+				list = parsed.filter((item): item is string => typeof item === 'string')
+			} else if (Array.isArray(parsed?.categories)) {
+				list = parsed.categories.filter((item: unknown): item is string => typeof item === 'string')
+			}
+		}
+	} catch {
+		// ignore invalid categories config and rebuild from current category
+	}
+
+	if (!list.includes(nextCategory)) {
+		list = [...list, nextCategory]
+	}
+
+	return JSON.stringify({ categories: list }, null, 2)
 }
 
 export async function pushBlog(params: PushBlogParams): Promise<void> {
@@ -162,6 +188,17 @@ export async function pushBlog(params: PushBlogParams): Promise<void> {
 		type: 'blob',
 		sha: indexBlob.sha
 	})
+
+	const categoriesJson = await prepareCategoriesConfig(token, GITHUB_CONFIG.OWNER, GITHUB_CONFIG.REPO, GITHUB_CONFIG.BRANCH, form.category)
+	if (categoriesJson) {
+		const categoriesBlob = await createBlob(token, GITHUB_CONFIG.OWNER, GITHUB_CONFIG.REPO, toBase64Utf8(categoriesJson), 'base64')
+		treeItems.push({
+			path: 'public/blogs/categories.json',
+			mode: '100644',
+			type: 'blob',
+			sha: categoriesBlob.sha
+		})
+	}
 
 	// create tree
 	toast.info('正在创建文件树...')

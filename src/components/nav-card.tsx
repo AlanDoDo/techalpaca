@@ -17,6 +17,8 @@ import ShareFilledSVG from '@/svgs/share-filled.svg'
 import ShareOutlineSVG from '@/svgs/share-outline.svg'
 import WebsiteFilledSVG from '@/svgs/website-filled.svg'
 import WebsiteOutlineSVG from '@/svgs/website-outline.svg'
+import PenFilledNavSVG from '@/svgs/pen-filled-nav.svg'
+import PenOutlineNavSVG from '@/svgs/pen-outline-nav.svg'
 import { usePathname } from 'next/navigation'
 import clsx from 'clsx'
 import { cn } from '@/lib/utils'
@@ -30,6 +32,12 @@ const list = [
 		iconActive: ScrollFilledSVG,
 		label: '文章',
 		href: '/blog'
+	},
+	{
+		icon: PenOutlineNavSVG,
+		iconActive: PenFilledNavSVG,
+		label: '随笔',
+		href: '/notes'
 	},
 	{
 		icon: ProjectsOutlineSVG,
@@ -70,7 +78,7 @@ export default function NavCard() {
 	const hiCardStyles = cardStyles.hiCard
 
 	const activeIndex = useMemo(() => {
-		const index = list.findIndex(item => pathname === item.href)
+		const index = list.findIndex(item => pathname === item.href || pathname.startsWith(`${item.href}/`))
 		return index >= 0 ? index : undefined
 	}, [pathname])
 
@@ -80,17 +88,27 @@ export default function NavCard() {
 
 	let form = useMemo(() => {
 		if (pathname === '/') return 'full'
-		if (pathname === '/write') return 'mini'
+		if (pathname.startsWith('/write')) return 'mini'
 		return 'icons'
 	}, [pathname])
 	if (maxSM) form = 'icons'
 
 	const itemHeight = form === 'full' ? 52 : 28
+	const fullHeight = Math.max(styles.height, 126 + list.length * (itemHeight + 8))
+
+	const size = useMemo(() => {
+		if (form === 'mini') return { width: 64, height: 64 }
+		if (form === 'icons') {
+			const width = Math.max(340, list.length * itemHeight + (list.length - 1) * 24 + 48)
+			return { width, height: 64 }
+		}
+		return { width: styles.width, height: fullHeight }
+	}, [form, styles.width, itemHeight, fullHeight])
 
 	let position = useMemo(() => {
 		if (form === 'full') {
 			const x = styles.offsetX !== null ? center.x + styles.offsetX : center.x - hiCardStyles.width / 2 - styles.width - CARD_SPACING
-			const y = styles.offsetY !== null ? center.y + styles.offsetY : center.y + hiCardStyles.height / 2 - styles.height
+			const y = styles.offsetY !== null ? center.y + styles.offsetY : center.y + hiCardStyles.height / 2 - fullHeight
 			return { x, y }
 		}
 
@@ -98,13 +116,7 @@ export default function NavCard() {
 			x: 24,
 			y: 16
 		}
-	}, [form, center, styles, hiCardStyles])
-
-	const size = useMemo(() => {
-		if (form === 'mini') return { width: 64, height: 64 }
-		if (form === 'icons') return { width: 340, height: 64 }
-		return { width: styles.width, height: styles.height }
-	}, [form, styles])
+	}, [form, center, styles, hiCardStyles, fullHeight])
 
 	useEffect(() => {
 		if (form === 'icons' && activeIndex !== undefined && hoveredIndex !== activeIndex) {
@@ -117,74 +129,75 @@ export default function NavCard() {
 
 	if (maxSM) position = { x: center.x - size.width / 2, y: 16 }
 
-	if (show)
-		return (
-			<HomeDraggableLayer cardKey='navCard' x={position.x} y={position.y} width={styles.width} height={styles.height}>
-				<Card
-					order={styles.order}
-					width={size.width}
-					height={size.height}
-					x={position.x}
-					y={position.y}
-					className={clsx(form !== 'full' && 'overflow-hidden', form === 'mini' && 'p-3', form === 'icons' && 'flex items-center gap-6 p-3')}>
-					{form === 'full' && siteContent.enableChristmas && (
-						<img
-							src='/images/christmas/snow-4.webp'
-							alt='Christmas decoration'
-							className='pointer-events-none absolute'
-							style={{ width: 160, left: -18, top: -20, opacity: 0.9 }}
-						/>
-					)}
+	if (!show) return null
 
-					<Link className='flex items-center gap-3' href='/'>
-						<Image src='/images/avatar.png' alt='avatar' width={40} height={40} style={{ boxShadow: '0 12px 20px -5px #E2D9CE' }} className='rounded-full' />
-						{form === 'full' && <span className='font-averia mt-1 text-2xl leading-none font-medium'>{siteContent.meta.title}</span>}
-						{form === 'full' && <span className='text-brand mt-2 text-xs font-medium'>(个人主页)</span>}
-					</Link>
+	return (
+		<HomeDraggableLayer cardKey='navCard' x={position.x} y={position.y} width={size.width} height={size.height}>
+			<Card
+				order={styles.order}
+				width={size.width}
+				height={size.height}
+				x={position.x}
+				y={position.y}
+				className={clsx(form !== 'full' && 'overflow-hidden', form === 'mini' && 'p-3', form === 'icons' && 'flex items-center gap-6 p-3')}>
+				{form === 'full' && siteContent.enableChristmas && (
+					<img
+						src='/images/christmas/snow-4.webp'
+						alt='Christmas decoration'
+						className='pointer-events-none absolute'
+						style={{ width: 160, left: -18, top: -20, opacity: 0.9 }}
+					/>
+				)}
 
-					{(form === 'full' || form === 'icons') && (
-						<>
-							{form !== 'icons' && <div className='text-secondary mt-6 text-sm uppercase'>General</div>}
+				<Link className='flex items-center gap-3' href='/'>
+					<Image src='/images/avatar.png' alt='avatar' width={40} height={40} style={{ boxShadow: '0 12px 20px -5px #E2D9CE' }} className='rounded-full' />
+					{form === 'full' && <span className='font-averia mt-1 text-2xl leading-none font-medium'>{siteContent.meta.title}</span>}
+					{form === 'full' && <span className='text-brand mt-2 text-xs font-medium'>(个人主页)</span>}
+				</Link>
 
-							<div className={cn('relative mt-2 space-y-2', form === 'icons' && 'mt-0 flex items-center gap-6 space-y-0')}>
-								<motion.div
-									className='absolute max-w-[230px] rounded-full border'
-									layoutId='nav-hover'
-									initial={false}
-									animate={
-										form === 'icons'
-											? {
-													left: hoveredIndex * (itemHeight + 24) - extraSize,
-													top: -extraSize,
-													width: itemHeight + extraSize * 2,
-													height: itemHeight + extraSize * 2
-												}
-											: { top: hoveredIndex * (itemHeight + 8), left: 0, width: '100%', height: itemHeight }
-									}
-									transition={{
-										type: 'spring',
-										stiffness: 400,
-										damping: 30
-									}}
-									style={{ backgroundImage: 'linear-gradient(to right bottom, var(--color-border) 60%, var(--color-card) 100%)' }}
-								/>
+				{(form === 'full' || form === 'icons') && (
+					<>
+						{form !== 'icons' && <div className='text-secondary mt-6 text-sm uppercase'>General</div>}
 
-								{list.map((item, index) => (
-									<Link
-										key={item.href}
-										href={item.href}
-										className={cn('text-secondary text-md relative z-10 flex items-center gap-3 rounded-full px-5 py-3', form === 'icons' && 'p-0')}
-										onMouseEnter={() => setHoveredIndex(index)}>
-										<div className='flex h-7 w-7 items-center justify-center'>
-											{hoveredIndex === index ? <item.iconActive className='text-brand absolute h-7 w-7' /> : <item.icon className='absolute h-7 w-7' />}
-										</div>
-										{form !== 'icons' && <span className={clsx(index === hoveredIndex && 'text-primary font-medium')}>{item.label}</span>}
-									</Link>
-								))}
-							</div>
-						</>
-					)}
-				</Card>
-			</HomeDraggableLayer>
-		)
+						<div className={cn('relative mt-2 space-y-2', form === 'icons' && 'mt-0 flex items-center gap-6 space-y-0')}>
+							<motion.div
+								className='absolute max-w-[230px] rounded-full border'
+								layoutId='nav-hover'
+								initial={false}
+								animate={
+									form === 'icons'
+										? {
+												left: hoveredIndex * (itemHeight + 24) - extraSize,
+												top: -extraSize,
+												width: itemHeight + extraSize * 2,
+												height: itemHeight + extraSize * 2
+											}
+										: { top: hoveredIndex * (itemHeight + 8), left: 0, width: '100%', height: itemHeight }
+								}
+								transition={{
+									type: 'spring',
+									stiffness: 400,
+									damping: 30
+								}}
+								style={{ backgroundImage: 'linear-gradient(to right bottom, var(--color-border) 60%, var(--color-card) 100%)' }}
+							/>
+
+							{list.map((item, index) => (
+								<Link
+									key={item.href}
+									href={item.href}
+									className={cn('text-secondary text-md relative z-10 flex items-center gap-3 rounded-full px-5 py-3', form === 'icons' && 'p-0')}
+									onMouseEnter={() => setHoveredIndex(index)}>
+									<div className='flex h-7 w-7 items-center justify-center'>
+										{hoveredIndex === index ? <item.iconActive className='text-brand absolute h-7 w-7' /> : <item.icon className='absolute h-7 w-7' />}
+									</div>
+									{form !== 'icons' && <span className={clsx(index === hoveredIndex && 'text-primary font-medium')}>{item.label}</span>}
+								</Link>
+							))}
+						</div>
+					</>
+				)}
+			</Card>
+		</HomeDraggableLayer>
+	)
 }

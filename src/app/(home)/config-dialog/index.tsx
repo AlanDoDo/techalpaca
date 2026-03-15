@@ -1,14 +1,14 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion } from 'motion/react'
 import { toast } from 'sonner'
 import { DialogModal } from '@/components/dialog-modal'
 import { useAuthStore } from '@/hooks/use-auth'
 import { useConfigStore } from '../stores/config-store'
 import { pushSiteContent } from '../services/push-site-content'
-import type { SiteContent, CardStyles } from '../stores/config-store'
-import { SiteSettings, type FileItem, type ArtImageUploads, type BackgroundImageUploads, type SocialButtonImageUploads } from './site-settings'
+import type { CardStyles, SiteContent } from '../stores/config-store'
+import { SiteSettings, type ArtImageUploads, type BackgroundImageUploads, type FileItem, type SocialButtonImageUploads } from './site-settings'
 import { ColorConfig } from './color-config'
 import { HomeLayout } from './home-layout'
 
@@ -36,25 +36,25 @@ export default function ConfigDialog({ open, onClose }: ConfigDialogProps) {
 	const [socialButtonImageUploads, setSocialButtonImageUploads] = useState<SocialButtonImageUploads>({})
 
 	useEffect(() => {
-		if (open) {
-			const current = { ...siteContent }
-			const currentCardStyles = { ...cardStyles }
-			setFormData(current)
-			setCardStylesData(currentCardStyles)
-			setOriginalData(current)
-			setOriginalCardStyles(currentCardStyles)
-			setFaviconItem(null)
-			setAvatarItem(null)
-			setArtImageUploads({})
-			setBackgroundImageUploads({})
-			setSocialButtonImageUploads({})
-			setActiveTab('site')
-		}
-	}, [open, siteContent, cardStyles])
+		if (!open) return
+
+		const currentSiteContent = { ...useConfigStore.getState().siteContent }
+		const currentCardStyles = { ...useConfigStore.getState().cardStyles }
+
+		setFormData(currentSiteContent)
+		setCardStylesData(currentCardStyles)
+		setOriginalData(currentSiteContent)
+		setOriginalCardStyles(currentCardStyles)
+		setFaviconItem(null)
+		setAvatarItem(null)
+		setArtImageUploads({})
+		setBackgroundImageUploads({})
+		setSocialButtonImageUploads({})
+		setActiveTab('site')
+	}, [open])
 
 	useEffect(() => {
 		return () => {
-			// Clean up preview URLs on unmount
 			if (faviconItem?.type === 'file') {
 				URL.revokeObjectURL(faviconItem.previewUrl)
 			}
@@ -86,27 +86,26 @@ export default function ConfigDialog({ open, onClose }: ConfigDialogProps) {
 			await handleSave()
 		} catch (error) {
 			console.error('Failed to read private key:', error)
-			toast.error('读取密钥文件失败')
+			toast.error('读取私钥文件失败')
 		}
 	}
 
 	const handleSaveClick = () => {
 		if (!isAuth) {
 			keyInputRef.current?.click()
-		} else {
-			handleSave()
+			return
 		}
+
+		handleSave()
 	}
 
 	const handleSave = async () => {
 		setIsSaving(true)
 		try {
-			// Calculate removed art images so that we can delete files in repo
 			const originalArtImages = originalData.artImages ?? []
 			const currentArtImages = formData.artImages ?? []
 			const removedArtImages = originalArtImages.filter(orig => !currentArtImages.some(current => current.id === orig.id))
 
-			// Calculate removed background images
 			const originalBackgroundImages = originalData.backgroundImages ?? []
 			const currentBackgroundImages = formData.backgroundImages ?? []
 			const removedBackgroundImages = originalBackgroundImages.filter(orig => !currentBackgroundImages.some(current => current.id === orig.id))
@@ -122,6 +121,7 @@ export default function ConfigDialog({ open, onClose }: ConfigDialogProps) {
 				removedBackgroundImages,
 				socialButtonImageUploads
 			)
+
 			setSiteContent(formData)
 			setCardStyles(cardStylesData)
 			updateThemeVariables(formData.theme)
@@ -140,7 +140,6 @@ export default function ConfigDialog({ open, onClose }: ConfigDialogProps) {
 	}
 
 	const handleCancel = () => {
-		// Clean up preview URLs
 		if (faviconItem?.type === 'file') {
 			URL.revokeObjectURL(faviconItem.previewUrl)
 		}
@@ -162,11 +161,11 @@ export default function ConfigDialog({ open, onClose }: ConfigDialogProps) {
 				URL.revokeObjectURL(item.previewUrl)
 			}
 		})
-		// Restore to the state when dialog was opened
+
 		setSiteContent(originalData)
 		setCardStyles(originalCardStyles)
 		regenerateBubbles()
-		// Restore document title and meta if they were changed by preview
+
 		if (typeof document !== 'undefined') {
 			document.title = originalData.meta.title
 			const metaDescription = document.querySelector('meta[name="description"]')
@@ -174,6 +173,7 @@ export default function ConfigDialog({ open, onClose }: ConfigDialogProps) {
 				metaDescription.setAttribute('content', originalData.meta.description)
 			}
 		}
+
 		updateThemeVariables(originalData.theme)
 		setFaviconItem(null)
 		setAvatarItem(null)
@@ -186,8 +186,7 @@ export default function ConfigDialog({ open, onClose }: ConfigDialogProps) {
 	const updateThemeVariables = (theme?: SiteContent['theme']) => {
 		if (typeof document === 'undefined' || !theme) return
 
-		const { colorBrand, colorBrandSecondary, colorPrimary, colorSecondary, colorBg, colorBorder, colorCard, colorArticle } = theme
-
+		const { colorArticle, colorBg, colorBorder, colorBrand, colorBrandSecondary, colorCard, colorPrimary, colorSecondary } = theme
 		const root = document.documentElement
 
 		if (colorBrand) root.style.setProperty('--color-brand', colorBrand)
@@ -201,12 +200,10 @@ export default function ConfigDialog({ open, onClose }: ConfigDialogProps) {
 	}
 
 	const handlePreview = () => {
-		console.log('formData', formData)
 		setSiteContent(formData)
 		setCardStyles(cardStylesData)
 		regenerateBubbles()
 
-		// Update document title
 		if (typeof document !== 'undefined') {
 			document.title = formData.meta.title
 			const metaDescription = document.querySelector('meta[name="description"]')
@@ -214,16 +211,16 @@ export default function ConfigDialog({ open, onClose }: ConfigDialogProps) {
 				metaDescription.setAttribute('content', formData.meta.description)
 			}
 		}
-		updateThemeVariables(formData.theme)
 
+		updateThemeVariables(formData.theme)
 		onClose()
 	}
 
-	const buttonText = isAuth ? '保存' : '导入密钥'
+	const buttonText = isAuth ? '保存' : '导入私钥后保存'
 
 	const tabs: { id: TabType; label: string }[] = [
-		{ id: 'site', label: '网站设置' },
-		{ id: 'color', label: '色彩配置' },
+		{ id: 'site', label: '站点设置' },
+		{ id: 'color', label: '颜色配置' },
 		{ id: 'layout', label: '首页布局' }
 	]
 
@@ -234,21 +231,21 @@ export default function ConfigDialog({ open, onClose }: ConfigDialogProps) {
 				type='file'
 				accept='.pem'
 				className='hidden'
-				onChange={async e => {
-					const f = e.target.files?.[0]
-					if (f) await handleChoosePrivateKey(f)
-					if (e.currentTarget) e.currentTarget.value = ''
+				onChange={async event => {
+					const file = event.target.files?.[0]
+					if (file) await handleChoosePrivateKey(file)
+					event.currentTarget.value = ''
 				}}
 			/>
 
-			<DialogModal open={open} onClose={handleCancel} className='card scrollbar-none max-h-[90vh] min-h-[600px] w-[640px] overflow-y-auto'>
-				<div className='mb-6 flex items-center justify-between'>
-					<div className='flex gap-1'>
+			<DialogModal open={open} onClose={handleCancel} className='card scrollbar-none max-h-[90vh] min-h-[600px] w-[720px] max-w-[calc(100vw-2rem)] overflow-y-auto'>
+				<div className='mb-6 flex items-start justify-between gap-4'>
+					<div className='scrollbar-none flex min-w-0 flex-1 items-center gap-1 overflow-x-auto pr-2'>
 						{tabs.map(tab => (
 							<button
 								key={tab.id}
 								onClick={() => setActiveTab(tab.id)}
-								className={`relative px-4 py-2 text-sm font-medium transition-colors ${
+								className={`relative shrink-0 whitespace-nowrap px-3 py-2 text-sm leading-none font-medium transition-colors ${
 									activeTab === tab.id ? 'text-brand' : 'text-secondary hover:text-primary'
 								}`}>
 								{tab.label}
@@ -256,12 +253,9 @@ export default function ConfigDialog({ open, onClose }: ConfigDialogProps) {
 							</button>
 						))}
 					</div>
-					<div className='flex gap-3'>
-						<motion.button
-							whileHover={{ scale: 1.05 }}
-							whileTap={{ scale: 0.95 }}
-							onClick={handlePreview}
-							className='bg-card rounded-xl border px-6 py-2 text-sm'>
+
+					<div className='flex shrink-0 gap-3'>
+						<motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={handlePreview} className='bg-card rounded-xl border px-6 py-2 text-sm'>
 							预览
 						</motion.button>
 						<motion.button

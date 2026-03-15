@@ -1,5 +1,8 @@
 'use client'
 
+import { useEffect } from 'react'
+import { motion } from 'motion/react'
+import { toast } from 'sonner'
 import HiCard from '@/app/(home)/hi-card'
 import ArtCard from '@/app/(home)/art-card'
 import ClockCard from '@/app/(home)/clock-card'
@@ -11,13 +14,10 @@ import WriteButtons from '@/app/(home)/write-buttons'
 import LikePosition from './like-position'
 import HatCard from './hat-card'
 import BeianCard from './beian-card'
+import ConfigDialog from './config-dialog/index'
 import { useSize } from '@/hooks/use-size'
-import { motion } from 'motion/react'
 import { useLayoutEditStore } from './stores/layout-edit-store'
 import { useConfigStore } from './stores/config-store'
-import { toast } from 'sonner'
-import ConfigDialog from './config-dialog/index'
-import { useEffect } from 'react'
 import SnowfallBackground from '@/layout/backgrounds/snowfall'
 
 export default function Home() {
@@ -29,23 +29,24 @@ export default function Home() {
 
 	const handleSave = () => {
 		saveEditing()
-		toast.success('首页布局偏移已保存（尚未提交到远程配置）')
+		toast.success('主页卡片布局已保存到当前预览。')
 	}
 
 	const handleCancel = () => {
 		cancelEditing()
-		toast.info('已取消此次拖拽布局修改')
+		toast.info('已撤销这次拖拽布局修改。')
 	}
 
 	useEffect(() => {
-		const handleKeyDown = (e: KeyboardEvent) => {
-			if ((e.ctrlKey || e.metaKey) && (e.key === 'l' || e.key === ',')) {
-				e.preventDefault()
+		const handleKeyDown = (event: KeyboardEvent) => {
+			if ((event.ctrlKey || event.metaKey) && (event.key === 'l' || event.key === ',')) {
+				event.preventDefault()
 				setConfigDialogOpen(true)
 			}
 		}
 
 		window.addEventListener('keydown', handleKeyDown)
+
 		return () => {
 			window.removeEventListener('keydown', handleKeyDown)
 		}
@@ -58,7 +59,7 @@ export default function Home() {
 			{editing && (
 				<div className='pointer-events-none fixed inset-x-0 top-0 z-50 flex justify-center pt-6'>
 					<div className='pointer-events-auto flex items-center gap-3 rounded-2xl bg-white/80 px-4 py-2 shadow-lg backdrop-blur'>
-						<span className='text-xs text-gray-600'>正在编辑首页布局，拖拽卡片调整位置</span>
+						<span className='text-xs text-gray-600'>拖拽卡片边框可以调整位置，右下角手柄可以缩放大小。</span>
 						<div className='flex gap-2'>
 							<motion.button
 								type='button'
@@ -69,7 +70,7 @@ export default function Home() {
 								取消
 							</motion.button>
 							<motion.button type='button' whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={handleSave} className='brand-btn px-3 py-1 text-xs'>
-								保存偏移
+								保存布局
 							</motion.button>
 						</div>
 					</div>

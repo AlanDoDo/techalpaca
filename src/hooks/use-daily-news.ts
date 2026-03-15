@@ -1,0 +1,28 @@
+'use client'
+
+import useSWR from 'swr'
+import type { DailyNewsResponse } from '@/lib/daily-news-types'
+
+const fetcher = async (url: string) => {
+	const response = await fetch(url, { cache: 'no-store' })
+	if (!response.ok) {
+		throw new Error('Failed to load daily news')
+	}
+
+	return (await response.json()) as DailyNewsResponse
+}
+
+export function useDailyNews() {
+	const { data, error, isLoading, mutate } = useSWR<DailyNewsResponse>('/api/daily-news', fetcher, {
+		refreshInterval: 6 * 60 * 60 * 1000,
+		revalidateOnFocus: false,
+		dedupingInterval: 5 * 60 * 1000
+	})
+
+	return {
+		data,
+		error,
+		isLoading,
+		mutate
+	}
+}

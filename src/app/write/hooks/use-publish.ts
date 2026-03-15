@@ -1,10 +1,10 @@
 import { useCallback } from 'react'
-import { readFileAsText } from '@/lib/file-utils'
 import { toast } from 'sonner'
+import { readFileAsText } from '@/lib/file-utils'
+import { useAuthStore } from '@/hooks/use-auth'
 import { pushBlog } from '../services/push-blog'
 import { deleteBlog } from '../services/delete-blog'
 import { useWriteStore } from '../stores/write-store'
-import { useAuthStore } from '@/hooks/use-auth'
 
 export function usePublish() {
 	const { loading, setLoading, form, cover, images, mode, originalSlug } = useWriteStore()
@@ -29,11 +29,12 @@ export function usePublish() {
 				originalSlug
 			})
 
-			const successMsg = mode === 'edit' ? '更新成功' : '发布成功'
-			toast.success(successMsg)
+			toast.success(mode === 'edit' ? '文章已保存' : '文章已发布')
+			return true
 		} catch (err: any) {
 			console.error(err)
-			toast.error(err?.message || '操作失败')
+			toast.error(err?.message || '发布失败')
+			return false
 		} finally {
 			setLoading(false)
 		}
@@ -42,7 +43,7 @@ export function usePublish() {
 	const onDelete = useCallback(async () => {
 		const targetSlug = originalSlug || form.slug
 		if (!targetSlug) {
-			toast.error('缺少 slug，无法删除')
+			toast.error('缺少文章 slug')
 			return
 		}
 		try {

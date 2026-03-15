@@ -66,10 +66,10 @@ export const archiveCategories: ArchiveCategory[] = [
 	},
 	{
 		id: 'frontend',
-		name: '前端工程',
-		description: '重点收录交互、组件系统、动画、性能与框架实践，适合做日常灵感仓库。',
-		eyebrow: 'Frontend',
-		keywords: ['React', '动画', '设计系统', '性能'],
+		name: '计算机技术',
+		description: '收录编程语言、前端工程、性能优化、框架实践等内容，作为更宽泛的计算机技术专题持续扩展。',
+		eyebrow: 'Computer Technology',
+		keywords: ['编程语言', 'C语言', 'React', '性能优化'],
 		theme: {
 			surface: 'from-[#fff3f6] via-white to-[#ffe0ea]',
 			ring: 'ring-[#ef88ad]/35',
@@ -276,6 +276,16 @@ export const archiveArticles: ArchiveArticle[] = [
 		tags: ['应用', '中文社区', '行业案例'],
 		categoryId: 'ai',
 		external: true
+	},
+	{
+		id: 'c-language-basics',
+		title: 'C语言基础',
+		excerpt: '这篇新拉取到本地的文章适合作为计算机技术专题里的基础内容，补齐编程语言方向的入门型条目。',
+		date: '2024-03-16T21:46:00',
+		href: '/blog/csdn',
+		source: 'TechAlpaca',
+		tags: ['C语言', '基础语法', '编程入门'],
+		categoryId: 'frontend'
 	},
 	{
 		id: 'react-performance-notes',
