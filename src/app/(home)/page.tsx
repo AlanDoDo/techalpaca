@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion } from 'motion/react'
 import { toast } from 'sonner'
 import HiCard from '@/app/(home)/hi-card'
@@ -16,20 +16,54 @@ import HatCard from './hat-card'
 import BeianCard from './beian-card'
 import ConfigDialog from './config-dialog/index'
 import { useSize } from '@/hooks/use-size'
+import { useAuthStore } from '@/hooks/use-auth'
 import { useLayoutEditStore } from './stores/layout-edit-store'
 import { useConfigStore } from './stores/config-store'
+import { pushSiteContent } from './services/push-site-content'
 import SnowfallBackground from '@/layout/backgrounds/snowfall'
 
 export default function Home() {
 	const { maxSM } = useSize()
 	const { cardStyles, configDialogOpen, setConfigDialogOpen, siteContent } = useConfigStore()
+	const { isAuth, setPrivateKey } = useAuthStore()
 	const editing = useLayoutEditStore(state => state.editing)
 	const saveEditing = useLayoutEditStore(state => state.saveEditing)
 	const cancelEditing = useLayoutEditStore(state => state.cancelEditing)
+	const keyInputRef = useRef<HTMLInputElement>(null)
+	const [isSaving, setIsSaving] = useState(false)
 
-	const handleSave = () => {
-		saveEditing()
-		toast.success('主页卡片布局已保存到当前预览。')
+	const handleChoosePrivateKey = async (file: File) => {
+		try {
+			const text = await file.text()
+			await setPrivateKey(text)
+			await handleSave()
+		} catch (error) {
+			console.error('Failed to read private key:', error)
+			toast.error('读取私钥文件失败')
+		}
+	}
+
+	const handleSave = async () => {
+		setIsSaving(true)
+		try {
+			await pushSiteContent(siteContent, cardStyles)
+			saveEditing()
+			toast.success('主页卡片布局已保存，刷新后会保持最新位置。')
+		} catch (error: any) {
+			console.error('Failed to save home layout:', error)
+			toast.error(`保存失败: ${error?.message || '未知错误'}`)
+		} finally {
+			setIsSaving(false)
+		}
+	}
+
+	const handleSaveClick = () => {
+		if (!isAuth) {
+			keyInputRef.current?.click()
+			return
+		}
+
+		void handleSave()
 	}
 
 	const handleCancel = () => {
@@ -54,6 +88,18 @@ export default function Home() {
 
 	return (
 		<>
+			<input
+				ref={keyInputRef}
+				type='file'
+				accept='.pem'
+				className='hidden'
+				onChange={async event => {
+					const file = event.target.files?.[0]
+					if (file) await handleChoosePrivateKey(file)
+					event.currentTarget.value = ''
+				}}
+			/>
+
 			{siteContent.enableChristmas && <SnowfallBackground zIndex={0} count={!maxSM ? 125 : 20} />}
 
 			{editing && (
@@ -66,11 +112,18 @@ export default function Home() {
 								whileHover={{ scale: 1.05 }}
 								whileTap={{ scale: 0.95 }}
 								onClick={handleCancel}
+								disabled={isSaving}
 								className='rounded-xl border bg-white px-3 py-1 text-xs font-medium text-gray-700'>
 								取消
 							</motion.button>
-							<motion.button type='button' whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={handleSave} className='brand-btn px-3 py-1 text-xs'>
-								保存布局
+							<motion.button
+								type='button'
+								whileHover={{ scale: 1.05 }}
+								whileTap={{ scale: 0.95 }}
+								onClick={handleSaveClick}
+								disabled={isSaving}
+								className='brand-btn px-3 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-60'>
+								{isSaving ? '保存中...' : isAuth ? '保存布局' : '导入私钥后保存布局'}
 							</motion.button>
 						</div>
 					</div>
