@@ -5,22 +5,22 @@
 		"username": "TechAlpaca"
 	},
 	"theme": {
-		"colorBrand": "#de4331",
-		"colorPrimary": "#4E3F42",
+		"colorBrand": "#2338E3",
+		"colorPrimary": "#241d1e",
 		"colorSecondary": "#7b888e",
-		"colorBrandSecondary": "#FCC841",
+		"colorBrandSecondary": "#51e3f7",
 		"colorBg": "#eeeeee",
 		"colorBorder": "#ffffff",
 		"colorCard": "#ffffff66",
 		"colorArticle": "#ffffffcc"
 	},
 	"backgroundColors": [
-		"#FCC841",
-		"#DFEFFC",
-		"#DEDE92",
-		"#DE4331",
-		"#FE9750",
-		"#FCC841"
+		"#C60083",
+		"#2A1E95",
+		"#3683CB",
+		"#4D5282",
+		"#D2F4E4",
+		"#B0BCA0"
 	],
 	"artImages": [
 		{
