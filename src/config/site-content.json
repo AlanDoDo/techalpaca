@@ -1,7 +1,7 @@
 {
 	"meta": {
 		"title": "TechAlpaca",
-		"description": "YYsuni 的个人博客，记录前端开发、探索、笔记。前端 UI 更新代码仓库。",
+		"description": "TechAlpaca 的个人博客，分享机器人行业的知识。共同进步。",
 		"username": "TechAlpaca"
 	},
 	"theme": {
@@ -48,21 +48,21 @@
 		{
 			"id": "github",
 			"type": "github",
-			"value": "https://github.com/yysuni",
+			"value": "https://github.com/AlanDoDo",
 			"label": "Github",
 			"order": 3
 		},
 		{
 			"id": "juejin",
-			"type": "juejin",
-			"value": "https://juejin.cn/user/2427311675422382",
-			"label": "稀土掘金",
+			"type": "bilibili",
+			"value": "https://space.bilibili.com/1116074436?spm_id_from=333.1007.0.0",
+			"label": "哔哩哔哩",
 			"order": 2
 		},
 		{
 			"id": "email",
 			"type": "email",
-			"value": "yysuni1001@gmail.com",
+			"value": "im.hanbo.shi@gmail.com",
 			"label": "",
 			"order": 1
 		}
