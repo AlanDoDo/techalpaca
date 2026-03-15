@@ -77,6 +77,13 @@
 	"currentHatIndex": 3,
 	"hatFlipped": false,
 	"enableChristmas": false,
+	"musicTracks": [
+		{
+			"id": "close-to-you",
+			"name": "Close To You",
+			"url": "/music/close-to-you.mp3"
+		}
+	],
 	"beian": {
 		"text": "",
 		"link": ""

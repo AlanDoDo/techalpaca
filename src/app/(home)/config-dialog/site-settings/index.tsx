@@ -41,6 +41,36 @@ export function SiteSettings({
 	socialButtonImageUploads,
 	setSocialButtonImageUploads
 }: SiteSettingsProps) {
+	const musicTracks = formData.musicTracks || []
+
+	const handleAddTrack = () => {
+		setFormData(prev => ({
+			...prev,
+			musicTracks: [
+				...(prev.musicTracks || []),
+				{
+					id: `track-${Date.now()}`,
+					name: '',
+					url: ''
+				}
+			]
+		}))
+	}
+
+	const handleUpdateTrack = (id: string, updates: { name?: string; url?: string }) => {
+		setFormData(prev => ({
+			...prev,
+			musicTracks: (prev.musicTracks || []).map(track => (track.id === id ? { ...track, ...updates } : track))
+		}))
+	}
+
+	const handleRemoveTrack = (id: string) => {
+		setFormData(prev => ({
+			...prev,
+			musicTracks: (prev.musicTracks || []).filter(track => track.id !== id)
+		}))
+	}
+
 	return (
 		<div className='space-y-6'>
 			<FaviconAvatarUpload faviconItem={faviconItem} setFaviconItem={setFaviconItem} avatarItem={avatarItem} setAvatarItem={setAvatarItem} />
@@ -55,6 +85,39 @@ export function SiteSettings({
 				socialButtonImageUploads={socialButtonImageUploads}
 				setSocialButtonImageUploads={setSocialButtonImageUploads}
 			/>
+
+			<div>
+				<div className='mb-2 flex items-center justify-between'>
+					<label className='block text-sm font-medium'>音乐列表</label>
+					<button type='button' onClick={handleAddTrack} className='bg-card rounded-lg border px-3 py-1 text-xs font-medium'>
+						+ 添加音乐
+					</button>
+				</div>
+				{musicTracks.length === 0 && <p className='mb-2 text-xs text-gray-500'>未配置音乐时，默认播放 /music/close-to-you.mp3。</p>}
+				<div className='space-y-2'>
+					{musicTracks.map(track => (
+						<div key={track.id} className='flex items-center gap-2'>
+							<input
+								type='text'
+								value={track.name || ''}
+								onChange={e => handleUpdateTrack(track.id, { name: e.target.value })}
+								placeholder='音乐名称（例如：Close To You）'
+								className='bg-secondary/10 w-48 rounded-lg border px-3 py-1.5 text-xs'
+							/>
+							<input
+								type='text'
+								value={track.url || ''}
+								onChange={e => handleUpdateTrack(track.id, { url: e.target.value })}
+								placeholder='音乐 URL（支持站内路径或外链）'
+								className='bg-secondary/10 flex-1 rounded-lg border px-3 py-1.5 text-xs'
+							/>
+							<button type='button' onClick={() => handleRemoveTrack(track.id)} className='text-xs text-red-500 hover:text-red-600'>
+								删除
+							</button>
+						</div>
+					))}
+				</div>
+			</div>
 
 			<ArtImagesSection formData={formData} setFormData={setFormData} artImageUploads={artImageUploads} setArtImageUploads={setArtImageUploads} />
 
