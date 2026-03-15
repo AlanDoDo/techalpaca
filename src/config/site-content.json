@@ -5,7 +5,7 @@
 		"username": "TechAlpaca"
 	},
 	"theme": {
-		"colorBrand": "#bf3f0f",
+		"colorBrand": "#de4331",
 		"colorPrimary": "#4E3F42",
 		"colorSecondary": "#7b888e",
 		"colorBrandSecondary": "#FCC841",
@@ -15,14 +15,12 @@
 		"colorArticle": "#ffffffcc"
 	},
 	"backgroundColors": [
-		"#EA955A",
-		"#73E3E5",
-		"#2F9DB1",
-		"#B8F3B8",
-		"#3878BD",
-		"#BF249E",
-		"#F25327",
-		"#A677DC"
+		"#FCC841",
+		"#DFEFFC",
+		"#DEDE92",
+		"#DE4331",
+		"#FE9750",
+		"#FCC841"
 	],
 	"artImages": [
 		{
@@ -78,11 +76,6 @@
 	"hatFlipped": false,
 	"enableChristmas": false,
 	"musicTracks": [
-		{
-			"id": "close-to-you",
-			"name": "Close To You",
-			"url": "/music/close-to-you.mp3"
-		},
 		{
 			"id": "track-1773569804711",
 			"name": "知我",
