@@ -1,6 +1,6 @@
 ﻿import { DAILY_ENGLISH_REVALIDATE_SECONDS, getDailyEnglish } from '@/lib/daily-english'
 
-export const revalidate = DAILY_ENGLISH_REVALIDATE_SECONDS
+export const revalidate = 21600
 
 export async function GET() {
 	try {
