@@ -12,7 +12,13 @@ import { Pause } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import clsx from 'clsx'
 
-const MUSIC_FILES = ['/music/close-to-you.mp3']
+type MusicTrack = {
+	id?: string
+	name: string
+	url: string
+}
+
+const FALLBACK_TRACKS: MusicTrack[] = [{ id: 'close-to-you', name: 'Close To You', url: '/music/close-to-you.mp3' }]
 
 export default function MusicCard() {
 	const pathname = usePathname()
@@ -23,7 +29,20 @@ export default function MusicCard() {
 	const clockCardStyles = cardStyles.clockCard
 	const calendarCardStyles = cardStyles.calendarCard
 
-	const [isPlaying, setIsPlaying] = useState(false)
+	const tracks = useMemo(() => {
+		const customTracks = siteContent.musicTracks?.filter(track => track?.url?.trim()) || []
+		if (customTracks.length === 0) {
+			return FALLBACK_TRACKS
+		}
+
+		return customTracks.map(track => ({
+			id: track.id,
+			name: track.name?.trim() || '未命名音乐',
+			url: track.url.trim()
+		}))
+	}, [siteContent.musicTracks])
+
+	const [isPlaying, setIsPlaying] = useState(true)
 	const [currentIndex, setCurrentIndex] = useState(0)
 	const [progress, setProgress] = useState(0)
 	const audioRef = useRef<HTMLAudioElement | null>(null)
@@ -32,7 +51,6 @@ export default function MusicCard() {
 	const isHomePage = pathname === '/'
 
 	const position = useMemo(() => {
-		// If not on home page, always position at bottom-right corner when playing
 		if (!isHomePage) {
 			return {
 				x: center.width - styles.width - 16,
@@ -40,16 +58,14 @@ export default function MusicCard() {
 			}
 		}
 
-		// Default position on home page
 		return {
 			x: styles.offsetX !== null ? center.x + styles.offsetX : center.x + CARD_SPACING + hiCardStyles.width / 2 - styles.offset,
 			y: styles.offsetY !== null ? center.y + styles.offsetY : center.y - clockCardStyles.offset + CARD_SPACING + calendarCardStyles.height + CARD_SPACING
 		}
-	}, [isPlaying, isHomePage, center, styles, hiCardStyles, clockCardStyles, calendarCardStyles])
+	}, [isHomePage, center, styles, hiCardStyles, clockCardStyles, calendarCardStyles])
 
 	const { x, y } = position
 
-	// Initialize audio element
 	useEffect(() => {
 		if (!audioRef.current) {
 			audioRef.current = new Audio()
@@ -64,7 +80,7 @@ export default function MusicCard() {
 		}
 
 		const handleEnded = () => {
-			const nextIndex = (currentIndexRef.current + 1) % MUSIC_FILES.length
+			const nextIndex = (currentIndexRef.current + 1) % tracks.length
 			currentIndexRef.current = nextIndex
 			setCurrentIndex(nextIndex)
 			setProgress(0)
@@ -87,15 +103,21 @@ export default function MusicCard() {
 			audio.removeEventListener('ended', handleEnded)
 			audio.removeEventListener('loadedmetadata', handleLoadedMetadata)
 		}
-	}, [])
+	}, [tracks.length])
 
-	// Handle currentIndex change - load new audio
+	useEffect(() => {
+		if (currentIndex >= tracks.length) {
+			setCurrentIndex(0)
+			currentIndexRef.current = 0
+		}
+	}, [tracks, currentIndex])
+
 	useEffect(() => {
 		currentIndexRef.current = currentIndex
 		if (audioRef.current) {
 			const wasPlaying = !audioRef.current.paused
 			audioRef.current.pause()
-			audioRef.current.src = MUSIC_FILES[currentIndex]
+			audioRef.current.src = tracks[currentIndex]?.url || ''
 			audioRef.current.loop = false
 			setProgress(0)
 
@@ -103,9 +125,8 @@ export default function MusicCard() {
 				audioRef.current.play().catch(console.error)
 			}
 		}
-	}, [currentIndex])
+	}, [currentIndex, tracks])
 
-	// Handle play/pause state change
 	useEffect(() => {
 		if (!audioRef.current) return
 
@@ -116,7 +137,6 @@ export default function MusicCard() {
 		}
 	}, [isPlaying])
 
-	// Cleanup on unmount
 	useEffect(() => {
 		return () => {
 			if (audioRef.current) {
@@ -130,7 +150,6 @@ export default function MusicCard() {
 		setIsPlaying(!isPlaying)
 	}
 
-	// Hide component if not on home page and not playing
 	if (!isHomePage && !isPlaying) {
 		return null
 	}
@@ -158,7 +177,7 @@ export default function MusicCard() {
 				<MusicSVG className='h-8 w-8' />
 
 				<div className='flex-1'>
-					<div className='text-secondary text-sm'>Close To You</div>
+					<div className='text-secondary text-sm'>{tracks[currentIndex]?.name || '未命名音乐'}</div>
 
 					<div className='mt-1 h-2 rounded-full bg-white/60'>
 						<div className='bg-linear h-full rounded-full transition-all duration-300' style={{ width: `${progress}%` }} />
