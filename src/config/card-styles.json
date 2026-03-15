@@ -20,16 +20,16 @@
 		"height": 132,
 		"offset": 92,
 		"order": 4,
-		"offsetX": null,
-		"offsetY": null,
+		"offsetX": 215,
+		"offsetY": -267,
 		"enabled": true
 	},
 	"calendarCard": {
 		"width": 350,
 		"height": 410,
 		"order": 5,
-		"offsetX": null,
-		"offsetY": null,
+		"offsetX": 215,
+		"offsetY": -105,
 		"enabled": true
 	},
 	"musicCard": {
@@ -37,8 +37,8 @@
 		"height": 66,
 		"offset": 120,
 		"order": 6,
-		"offsetX": null,
-		"offsetY": null,
+		"offsetX": 98,
+		"offsetY": 344,
 		"enabled": true
 	},
 	"socialButtons": {
@@ -69,8 +69,8 @@
 		"height": 42,
 		"width": 180,
 		"order": 8,
-		"offsetX": null,
-		"offsetY": null,
+		"offsetX": 211,
+		"offsetY": -344,
 		"enabled": true
 	},
 	"navCard": {
@@ -85,8 +85,8 @@
 		"width": 54,
 		"height": 54,
 		"order": 8,
-		"offsetX": null,
-		"offsetY": null,
+		"offsetX": 108,
+		"offsetY": 262,
 		"enabled": true
 	},
 	"hatCard": {
