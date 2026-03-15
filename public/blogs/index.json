@@ -179,18 +179,7 @@
     "date": "2026-01-14T18:03",
     "summary": "折腾 Shader",
     "cover": "/blogs/wave-ball/86d118420c399cdb.webp",
-    "hidden": false,
-    "category": "代码实现"
-  },
-  {
-    "slug": "fish-animation",
-    "title": "鱼鱼动画",
-    "tags": [],
-    "date": "2026-01-12T10:43",
-    "summary": "规划草稿",
-    "cover": "https://www.yysuni.com/images/pictures/b346636da687740b.webp",
-    "hidden": true,
-    "category": ""
+    "hidden": false
   },
   {
     "slug": "love-island",
@@ -214,8 +203,7 @@
     "date": "2026-01-06T17:05",
     "summary": "AI 学习边框特效",
     "cover": "/blogs/electric-border/9b898d43a5a85684.webp",
-    "hidden": false,
-    "category": "代码实现"
+    "hidden": false
   },
   {
     "slug": "driving-tour",
@@ -275,8 +263,7 @@
     ],
     "date": "2025-11-21",
     "summary": "很简单就能实现这个液态玻璃效果，真棒",
-    "cover": "/blogs/liquid-grass/0e7190ecaedc4930.png",
-    "category": "代码实现"
+    "cover": "/blogs/liquid-grass/0e7190ecaedc4930.png"
   },
   {
     "slug": "readme",
@@ -324,8 +311,7 @@
     ],
     "date": "2025-10-14",
     "summary": "网站设计中，网格实现的研究",
-    "cover": "/blogs/retro-grid/5f88408967c22d252c82ae65d1479d7dd9514921123fd4aeb372dd219037f708.png",
-    "category": "代码实现"
+    "cover": "/blogs/retro-grid/5f88408967c22d252c82ae65d1479d7dd9514921123fd4aeb372dd219037f708.png"
   },
   {
     "slug": "first-ios-app",
