@@ -115,17 +115,16 @@ export default function MusicCard() {
 	useEffect(() => {
 		currentIndexRef.current = currentIndex
 		if (audioRef.current) {
-			const wasPlaying = !audioRef.current.paused
 			audioRef.current.pause()
 			audioRef.current.src = tracks[currentIndex]?.url || ''
 			audioRef.current.loop = false
 			setProgress(0)
 
-			if (wasPlaying) {
+			if (isPlaying) {
 				audioRef.current.play().catch(console.error)
 			}
 		}
-	}, [currentIndex, tracks])
+	}, [currentIndex, tracks, isPlaying])
 
 	useEffect(() => {
 		if (!audioRef.current) return
