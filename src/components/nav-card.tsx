@@ -28,32 +28,32 @@ const list = [
 	{
 		icon: ScrollOutlineSVG,
 		iconActive: ScrollFilledSVG,
-		label: '近期文章',
+		label: '文章',
 		href: '/blog'
 	},
 	{
 		icon: ProjectsOutlineSVG,
 		iconActive: ProjectsFilledSVG,
-		label: '我的项目',
+		label: '项目',
 		href: '/projects'
-	},
-	{
-		icon: AboutOutlineSVG,
-		iconActive: AboutFilledSVG,
-		label: '关于网站',
-		href: '/about'
 	},
 	{
 		icon: ShareOutlineSVG,
 		iconActive: ShareFilledSVG,
-		label: '推荐分享',
+		label: '分享',
 		href: '/share'
 	},
 	{
 		icon: WebsiteOutlineSVG,
 		iconActive: WebsiteFilledSVG,
-		label: '优秀博客',
+		label: '文章归档',
 		href: '/bloggers'
+	},
+	{
+		icon: AboutOutlineSVG,
+		iconActive: AboutFilledSVG,
+		label: '关于',
+		href: '/about'
 	}
 ]
 
@@ -79,9 +79,9 @@ export default function NavCard() {
 	}, [])
 
 	let form = useMemo(() => {
-		if (pathname == '/') return 'full'
-		else if (pathname == '/write') return 'mini'
-		else return 'icons'
+		if (pathname === '/') return 'full'
+		if (pathname === '/write') return 'mini'
+		return 'icons'
 	}, [pathname])
 	if (maxSM) form = 'icons'
 
@@ -102,8 +102,8 @@ export default function NavCard() {
 
 	const size = useMemo(() => {
 		if (form === 'mini') return { width: 64, height: 64 }
-		else if (form === 'icons') return { width: 340, height: 64 }
-		else return { width: styles.width, height: styles.height }
+		if (form === 'icons') return { width: 340, height: 64 }
+		return { width: styles.width, height: styles.height }
 	}, [form, styles])
 
 	useEffect(() => {
@@ -126,22 +126,20 @@ export default function NavCard() {
 					height={size.height}
 					x={position.x}
 					y={position.y}
-					className={clsx(form != 'full' && 'overflow-hidden', form === 'mini' && 'p-3', form === 'icons' && 'flex items-center gap-6 p-3')}>
+					className={clsx(form !== 'full' && 'overflow-hidden', form === 'mini' && 'p-3', form === 'icons' && 'flex items-center gap-6 p-3')}>
 					{form === 'full' && siteContent.enableChristmas && (
-						<>
-							<img
-								src='/images/christmas/snow-4.webp'
-								alt='Christmas decoration'
-								className='pointer-events-none absolute'
-								style={{ width: 160, left: -18, top: -20, opacity: 0.9 }}
-							/>
-						</>
+						<img
+							src='/images/christmas/snow-4.webp'
+							alt='Christmas decoration'
+							className='pointer-events-none absolute'
+							style={{ width: 160, left: -18, top: -20, opacity: 0.9 }}
+						/>
 					)}
 
 					<Link className='flex items-center gap-3' href='/'>
-						<Image src='/images/avatar.png' alt='avatar' width={40} height={40} style={{ boxShadow: ' 0 12px 20px -5px #E2D9CE' }} className='rounded-full' />
+						<Image src='/images/avatar.png' alt='avatar' width={40} height={40} style={{ boxShadow: '0 12px 20px -5px #E2D9CE' }} className='rounded-full' />
 						{form === 'full' && <span className='font-averia mt-1 text-2xl leading-none font-medium'>{siteContent.meta.title}</span>}
-						{form === 'full' && <span className='text-brand mt-2 text-xs font-medium'>(开发中)</span>}
+						{form === 'full' && <span className='text-brand mt-2 text-xs font-medium'>(个人主页)</span>}
 					</Link>
 
 					{(form === 'full' || form === 'icons') && (
@@ -178,9 +176,9 @@ export default function NavCard() {
 										className={cn('text-secondary text-md relative z-10 flex items-center gap-3 rounded-full px-5 py-3', form === 'icons' && 'p-0')}
 										onMouseEnter={() => setHoveredIndex(index)}>
 										<div className='flex h-7 w-7 items-center justify-center'>
-											{hoveredIndex == index ? <item.iconActive className='text-brand absolute h-7 w-7' /> : <item.icon className='absolute h-7 w-7' />}
+											{hoveredIndex === index ? <item.iconActive className='text-brand absolute h-7 w-7' /> : <item.icon className='absolute h-7 w-7' />}
 										</div>
-										{form !== 'icons' && <span className={clsx(index == hoveredIndex && 'text-primary font-medium')}>{item.label}</span>}
+										{form !== 'icons' && <span className={clsx(index === hoveredIndex && 'text-primary font-medium')}>{item.label}</span>}
 									</Link>
 								))}
 							</div>

@@ -47,6 +47,7 @@ export default function MusicCard() {
 	const [progress, setProgress] = useState(0)
 	const audioRef = useRef<HTMLAudioElement | null>(null)
 	const currentIndexRef = useRef(0)
+	const isPlayingRef = useRef(false)
 
 	const isHomePage = pathname === '/'
 
@@ -115,13 +116,13 @@ export default function MusicCard() {
 	useEffect(() => {
 		currentIndexRef.current = currentIndex
 		if (audioRef.current) {
-			const wasPlaying = !audioRef.current.paused
+			const shouldContinuePlayback = isPlayingRef.current
 			audioRef.current.pause()
 			audioRef.current.src = tracks[currentIndex]?.url || ''
 			audioRef.current.loop = false
 			setProgress(0)
 
-			if (wasPlaying) {
+			if (shouldContinuePlayback) {
 				audioRef.current.play().catch(console.error)
 			}
 		}
@@ -129,6 +130,7 @@ export default function MusicCard() {
 
 	useEffect(() => {
 		if (!audioRef.current) return
+		isPlayingRef.current = isPlaying
 
 		if (isPlaying) {
 			audioRef.current.play().catch(console.error)
@@ -147,7 +149,7 @@ export default function MusicCard() {
 	}, [])
 
 	const togglePlayPause = () => {
-		setIsPlaying(!isPlaying)
+		setIsPlaying(prev => !prev)
 	}
 
 	if (!isHomePage && !isPlaying) {

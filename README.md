@@ -162,3 +162,75 @@ tg 群：1月1号，才创建的 tg 群 https://t.me/public_blog_2025
    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=YYsuni/2025-blog-public&type=date&legend=top-left" />
  </picture>
 </a>
+
+# 本地部署
+
+要在本地运行这个 `2025 Blog` 仓库项目，可按照以下步骤操作，结合项目的技术栈（从文件列表能看出是 Next.js + TypeScript + pnpm 管理依赖）和 README 中的提示来执行：
+
+### 前提条件
+确保本地已安装：
+- Node.js（建议 18.x 及以上版本，Next.js 对 Node 版本有要求）
+- pnpm（项目依赖管理工具，也可替换为 npm/yarn，但推荐用 pnpm 保持一致性）
+- Git（用于克隆仓库）
+
+### 步骤 1：克隆仓库
+首先将仓库克隆到本地，打开终端执行：
+```bash
+git clone <你的仓库地址>
+cd techalpaca  # 进入仓库根目录
+```
+
+### 步骤 2：安装依赖
+项目使用 `pnpm` 管理依赖，执行安装命令：
+```bash
+pnpm install
+# 若未安装pnpm，可先执行：npm install -g pnpm
+```
+
+### 步骤 3：配置环境变量（可选/必要）
+项目依赖 Github App 相关配置，有两种配置方式：
+
+#### 方式 1：直接修改常量文件（简单，适合本地测试）
+编辑 `src/consts.ts` 文件，修改 `GITHUB_CONFIG` 中的值为你自己的 Github App 信息：
+```ts
+export const GITHUB_CONFIG = {
+	OWNER: '你的 Github 用户名/组织名',
+	REPO: '你的仓库名',
+	BRANCH: 'main', // 或你使用的分支
+	APP_ID: '你的 Github App ID'
+} as const
+```
+
+#### 方式 2：创建环境变量文件（规范）
+在项目根目录创建 `.env.local` 文件（Next.js 会自动加载该文件的环境变量），添加以下内容：
+```env
+NEXT_PUBLIC_GITHUB_OWNER=你的 Github 用户名/组织名
+NEXT_PUBLIC_GITHUB_REPO=你的仓库名
+NEXT_PUBLIC_GITHUB_BRANCH=main
+NEXT_PUBLIC_GITHUB_APP_ID=你的 Github App ID
+```
+
+### 步骤 4：启动本地开发服务器
+执行 Next.js 开发启动命令：
+```bash
+pnpm dev
+# 若 package.json 中无 dev 脚本，可直接执行：next dev
+```
+
+### 步骤 5：访问本地服务
+启动成功后，终端会输出本地访问地址（默认是 `http://localhost:3000`），打开浏览器访问该地址即可看到项目运行效果。
+
+### 额外说明
+1. 若遇到依赖安装失败：
+   - 检查网络是否正常，或切换 npm 源（如淘宝源）：`pnpm config set registry https://registry.npmmirror.com`
+   - 确保 Node 版本符合 `package.json` 中 `engines` 字段的要求（若有）。
+2. 若启动时报 TypeScript 类型错误：
+   - 检查 `tsconfig.json` 配置是否正确，执行 `pnpm tsc --noEmit` 排查类型问题。
+3. 本地运行时，Github App 的 Private Key 若需使用，需确保本地环境能读取到该密钥（可在前端配置页面手动录入，或通过环境变量传入）。
+4. 若需要构建生产版本（本地验证），执行：
+   ```bash
+   pnpm build  # 构建
+   pnpm start  # 启动生产服务
+   ```
+
+按照以上步骤，即可完成项目的本地运行和调试。
