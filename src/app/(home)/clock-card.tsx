@@ -1,146 +1,112 @@
-'use client'
+﻿'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { ArrowRight, BookMarked, Quote, Sparkles } from 'lucide-react'
 import Card from '@/components/card'
 import { useCenterStore } from '@/hooks/use-center'
+import { CARD_SPACING } from '@/consts'
 import { useConfigStore } from './stores/config-store'
 import { useLayoutEditStore } from './stores/layout-edit-store'
-import { CARD_SPACING } from '@/consts'
 import { HomeDraggableLayer } from './home-draggable-layer'
+import { useDailyEnglish } from '@/hooks/use-daily-english'
+import { getDueDailyEnglishEntries, readDailyEnglishReviewState } from '@/features/daily-english/review'
 
-export default function ClockCard() {
+export default function DailyEnglishCard() {
 	const router = useRouter()
 	const center = useCenterStore()
 	const { cardStyles, siteContent } = useConfigStore()
 	const editing = useLayoutEditStore(state => state.editing)
-	const [time, setTime] = useState(new Date())
+	const { data } = useDailyEnglish()
+	const [dueCount, setDueCount] = useState(0)
 	const styles = cardStyles.clockCard
 	const hiCardStyles = cardStyles.hiCard
-	const showSeconds = siteContent.clockShowSeconds ?? false
+	const currentEntry = data?.current
+	const reviewEntries = data?.confirmed?.length ? data.confirmed : data?.history ?? []
 
 	useEffect(() => {
-		const interval = showSeconds ? 1000 : 5000
-		const timer = setInterval(() => {
-			setTime(new Date())
-		}, interval)
+		const syncReviewCount = () => {
+			const reviewState = readDailyEnglishReviewState()
+			setDueCount(getDueDailyEnglishEntries(reviewEntries, reviewState, new Date(), 99).length)
+		}
 
-		return () => clearInterval(timer)
-	}, [showSeconds])
-
-	const hours = time.getHours().toString().padStart(2, '0')
-	const minutes = time.getMinutes().toString().padStart(2, '0')
-	const seconds = time.getSeconds().toString().padStart(2, '0')
+		syncReviewCount()
+		window.addEventListener('storage', syncReviewCount)
+		return () => {
+			window.removeEventListener('storage', syncReviewCount)
+		}
+	}, [reviewEntries])
 
 	const x = styles.offsetX !== null ? center.x + styles.offsetX : center.x + CARD_SPACING + hiCardStyles.width / 2
 	const y = styles.offsetY !== null ? center.y + styles.offsetY : center.y - styles.offset - styles.height
 
+	const sourceLabel = useMemo(() => {
+		if (!data) return '同步中'
+		return data.source.fallback ? '本地兜底' : 'Tatoeba'
+	}, [data])
+
 	return (
 		<HomeDraggableLayer cardKey='clockCard' x={x} y={y} width={styles.width} height={styles.height}>
-			<Card order={styles.order} width={styles.width} height={styles.height} x={x} y={y} className='p-2'>
-				{siteContent.enableChristmas && (
-					<>
-						<img
-							src='/images/christmas/snow-5.webp'
-							alt='Christmas decoration'
-							className='pointer-events-none absolute'
-							style={{ width: 60, left: 2, bottom: 2, opacity: 0.6 }}
-						/>
-						<img
-							src='/images/christmas/snow-6.webp'
-							alt='Christmas decoration'
-							className='pointer-events-none absolute'
-							style={{ width: 80, right: -4, top: -10, opacity: 0.6 }}
-						/>
-					</>
-				)}
-				<div
+			<Card order={styles.order} width={styles.width} height={styles.height} x={x} y={y} className='overflow-hidden p-2'>
+				<button
+					type='button'
 					onClick={() => {
 						if (!editing) {
 							router.push('/clock')
 						}
 					}}
-					className='bg-secondary/20 card-rounded flex h-full w-full cursor-pointer items-center justify-center gap-1.5 p-2'>
-					<SevenSegmentDigit value={parseInt(hours[0])} />
-					<SevenSegmentDigit value={parseInt(hours[1])} />
-					<Colon />
-					<SevenSegmentDigit value={parseInt(minutes[0])} />
-					<SevenSegmentDigit value={parseInt(minutes[1])} />
-					{showSeconds && (
-						<>
-							<Colon />
-							<SevenSegmentDigit value={parseInt(seconds[0])} />
-							<SevenSegmentDigit value={parseInt(seconds[1])} />
-						</>
-					)}
-				</div>
+					className='relative grid h-full w-full grid-rows-[auto_1fr_auto] gap-4 overflow-hidden rounded-[34px] border border-white/90 bg-[linear-gradient(145deg,rgba(255,255,255,0.99),rgba(255,251,247,0.97)_54%,rgba(250,243,237,0.95))] px-5 py-4 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]'>
+					<div className='pointer-events-none absolute inset-0'>
+						<div className='absolute top-[-42px] right-[-18px] h-36 w-36 rounded-full bg-[rgba(243,184,136,0.16)] blur-3xl' />
+						<div className='absolute top-8 right-14 h-16 w-16 rounded-full bg-[rgba(255,255,255,0.78)] blur-2xl' />
+						<div className='absolute bottom-[-26px] left-[-12px] h-28 w-28 rounded-full bg-[rgba(191,225,219,0.16)] blur-3xl' />
+						<div className='absolute inset-x-5 bottom-4 h-px bg-[linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,0.98),rgba(255,255,255,0))]' />
+					</div>
+
+					{siteContent.enableChristmas && <img src='/images/christmas/snow-5.webp' alt='' className='pointer-events-none absolute right-3 bottom-3 h-8 w-8 opacity-45' />}
+
+					<div className='relative flex items-start justify-between gap-4'>
+						<div className='space-y-3'>
+							<div className='inline-flex items-center gap-2 rounded-full border border-white/95 bg-white/88 px-3 py-1.5 text-[10px] font-semibold tracking-[0.24em] text-[#b16e3e] uppercase shadow-[0_12px_24px_-22px_rgba(123,86,60,0.35)]'>
+								<BookMarked className='h-3.5 w-3.5' />
+								Daily English
+							</div>
+							<div className='flex items-center gap-2 text-[11px] font-medium text-[#9c7d69]'>
+								<Sparkles className='h-3.5 w-3.5 text-[#df9151]' />
+								<span>{sourceLabel}</span>
+								<span className='text-[#d6bba7]'>·</span>
+								<span>每天一句自然表达</span>
+							</div>
+						</div>
+						<div className='rounded-[20px] border border-white/95 bg-white/86 p-3 text-[#d18b55] shadow-[0_16px_26px_-24px_rgba(123,86,60,0.35)]'>
+							<Quote className='h-4 w-4' />
+						</div>
+					</div>
+
+					<div className='relative space-y-3'>
+						<div className='max-w-[92%] text-[18px] leading-[1.48] font-semibold text-[#5a4030] sm:text-[19px]'>
+							{currentEntry?.english ?? '正在准备今天的英语句子...'}
+						</div>
+						<div className='max-w-[94%] rounded-[22px] border border-white/90 bg-white/82 px-4 py-3 text-[13px] leading-6 text-[#8a7161] shadow-[0_18px_30px_-28px_rgba(123,86,60,0.28)]'>
+							{currentEntry?.translation ?? '加载后会显示中文释义与复习内容。'}
+						</div>
+					</div>
+
+					<div className='relative flex items-end justify-between gap-4'>
+						<div className='space-y-2'>
+							<div className='flex flex-wrap gap-2'>
+								<span className='rounded-full bg-white/88 px-3 py-1 text-[11px] font-medium text-[#bf7e4c] ring-1 ring-[#f3dfd0]'>待复习 {dueCount}</span>
+								<span className='rounded-full bg-white/82 px-3 py-1 text-[11px] font-medium text-[#9a8070] ring-1 ring-white/95'>首页口语卡片</span>
+							</div>
+							<p className='text-[11px] leading-5 text-[#9b8576]'>点开继续跟读、复习和查看历史句子。</p>
+						</div>
+						<div className='inline-flex shrink-0 items-center gap-2 rounded-full border border-white/95 bg-white/88 px-4 py-2 text-[12px] font-semibold text-[#8f6c54] shadow-[0_12px_24px_-20px_rgba(123,86,60,0.28)]'>
+							进入学习页
+							<ArrowRight className='h-4 w-4' />
+						</div>
+					</div>
+				</button>
 			</Card>
 		</HomeDraggableLayer>
-	)
-}
-
-interface SevenSegmentDigitProps {
-	value: number
-	className?: string
-}
-
-function SevenSegmentDigit({ value, className }: SevenSegmentDigitProps) {
-	const segmentMap = {
-		0: [true, true, true, true, true, true, false],
-		1: [false, true, true, false, false, false, false],
-		2: [true, true, false, true, true, false, true],
-		3: [true, true, true, true, false, false, true],
-		4: [false, true, true, false, false, true, true],
-		5: [true, false, true, true, false, true, true],
-		6: [true, false, true, true, true, true, true],
-		7: [true, true, true, false, false, false, false],
-		8: [true, true, true, true, true, true, true],
-		9: [true, true, true, true, false, true, true]
-	}
-
-	const segments = segmentMap[value as keyof typeof segmentMap] || segmentMap[0]
-	const activeColor = 'var(--color-primary)'
-	const inactiveColor = 'rgba(0, 0, 0, 0.05)'
-
-	return (
-		<svg width='29' height='52' viewBox='0 0 29 52' fill='none' xmlns='http://www.w3.org/2000/svg' className={className}>
-			<path
-				d='M4.20248 3.49482C2.82797 2.27303 3.69218 0 5.53121 0H22.6867C24.5522 0 25.4019 2.32821 23.975 3.52982L23.5791 3.86316C23.2186 4.16681 22.7623 4.33333 22.2909 4.33333H5.90621C5.41638 4.33333 4.94359 4.15358 4.57748 3.82815L4.20248 3.49482Z'
-				fill={segments[0] ? activeColor : inactiveColor}
-			/>
-			<path
-				d='M3.85122 24.13C4.16644 23.936 4.5293 23.8333 4.89942 23.8333H23.3022C23.6503 23.8333 23.9923 23.9242 24.2945 24.0969L24.5862 24.2635C25.9298 25.0313 25.9298 26.9687 24.5862 27.7365L24.2945 27.9032C23.9923 28.0758 23.6503 28.1667 23.3022 28.1667H4.89942C4.5293 28.1667 4.16644 28.064 3.85122 27.87L3.58039 27.7033C2.31131 26.9224 2.31132 25.0777 3.58039 24.2967L3.85122 24.13Z'
-				fill={segments[6] ? activeColor : inactiveColor}
-			/>
-			<path
-				d='M3.06 23.5458C1.7279 24.3784 -8.31295e-08 23.4207 -1.47217e-07 21.8498L-8.06095e-07 5.69981C-8.77526e-07 3.94893 2.09055 3.04323 3.36788 4.24073L3.70121 4.55323C4.10452 4.93133 4.33333 5.45949 4.33333 6.01231L4.33333 21.6415C4.33333 22.3311 3.97809 22.972 3.39333 23.3375L3.06 23.5458Z'
-				fill={segments[5] ? activeColor : inactiveColor}
-			/>
-			<path
-				d='M24.8497 4.25654C26.1428 3.12502 28.1667 4.04338 28.1667 5.76169L28.1667 21.8498C28.1667 23.4207 26.4388 24.3784 25.1067 23.5458L24.7734 23.3375C24.1886 22.972 23.8334 22.3311 23.8334 21.6415L23.8334 6.05336C23.8334 5.47663 24.0823 4.92798 24.5163 4.54821L24.8497 4.25654Z'
-				fill={segments[1] ? activeColor : inactiveColor}
-			/>
-			<path
-				d='M23.9259 48.6321C25.1234 49.9094 24.2177 52 22.4669 52L5.69978 52C3.9489 52 3.04321 49.9094 4.24071 48.6321L4.55321 48.2988C4.9313 47.8955 5.45947 47.6667 6.01228 47.6667L22.1544 47.6667C22.7072 47.6667 23.2353 47.8955 23.6134 48.2988L23.9259 48.6321Z'
-				fill={segments[3] ? activeColor : inactiveColor}
-			/>
-			<path
-				d='M25.1862 28.489C26.5194 27.7391 28.1667 28.7025 28.1667 30.2322L28.1667 46.6299C28.1667 48.4117 26.0124 49.3041 24.7525 48.0441L24.4191 47.7108C24.0441 47.3357 23.8334 46.827 23.8334 46.2966L23.8334 30.4197C23.8334 29.6971 24.2231 29.0308 24.8528 28.6765L25.1862 28.489Z'
-				fill={segments[2] ? activeColor : inactiveColor}
-			/>
-			<path
-				d='M3.4564 47.7859C2.21509 49.1048 4.23823e-07 48.2263 6.6133e-07 46.4152L2.79423e-06 30.1501C3.00022e-06 28.5793 1.72791 27.6216 3.06 28.4541L3.39333 28.6625C3.9781 29.028 4.33334 29.6689 4.33334 30.3585L4.33333 46.061C4.33333 46.5705 4.13891 47.0607 3.78973 47.4317L3.4564 47.7859Z'
-				fill={segments[4] ? activeColor : inactiveColor}
-			/>
-		</svg>
-	)
-}
-
-function Colon({ className }: { className?: string }) {
-	return (
-		<div className={`flex flex-col justify-center gap-2 ${className}`}>
-			<div className='bg-primary h-1.5 w-1.5' />
-			<div className='bg-primary h-1.5 w-1.5' />
-		</div>
 	)
 }

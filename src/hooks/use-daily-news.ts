@@ -14,7 +14,7 @@ const fetcher = async (url: string) => {
 
 export function useDailyNews() {
 	const { data, error, isLoading, mutate } = useSWR<DailyNewsResponse>('/api/daily-news', fetcher, {
-		refreshInterval: 6 * 60 * 60 * 1000,
+		refreshInterval: 2 * 60 * 60 * 1000,
 		revalidateOnFocus: false,
 		dedupingInterval: 5 * 60 * 1000
 	})

@@ -5,8 +5,8 @@ import { motion } from 'motion/react'
 import { toast } from 'sonner'
 import HiCard from '@/app/(home)/hi-card'
 import ArtCard from '@/app/(home)/art-card'
-import ClockCard from '@/app/(home)/clock-card'
-import CalendarCard from '@/app/(home)/calendar-card'
+import DailyEnglishCard from '@/app/(home)/clock-card'
+import DailyNewsCard from '@/app/(home)/daily-news-card'
 import SocialButtons from '@/app/(home)/social-buttons'
 import ShareCard from '@/app/(home)/share-card'
 import AritcleCard from '@/app/(home)/aritcle-card'
@@ -133,8 +133,8 @@ export default function Home() {
 			<div className='max-sm:flex max-sm:flex-col max-sm:items-center max-sm:gap-6 max-sm:pt-28 max-sm:pb-20'>
 				{cardStyles.artCard?.enabled !== false && <ArtCard />}
 				{cardStyles.hiCard?.enabled !== false && <HiCard />}
-				{!maxSM && cardStyles.clockCard?.enabled !== false && <ClockCard />}
-				{!maxSM && cardStyles.calendarCard?.enabled !== false && <CalendarCard />}
+				{!maxSM && cardStyles.clockCard?.enabled !== false && <DailyEnglishCard />}
+				{!maxSM && cardStyles.calendarCard?.enabled !== false && <DailyNewsCard />}
 				{cardStyles.socialButtons?.enabled !== false && <SocialButtons />}
 				{!maxSM && cardStyles.shareCard?.enabled !== false && <ShareCard />}
 				{cardStyles.articleCard?.enabled !== false && <AritcleCard />}

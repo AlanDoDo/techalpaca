@@ -1,6 +1,6 @@
-﻿import { DAILY_NEWS_REVALIDATE_SECONDS, getDailyNews } from '@/lib/daily-news'
+import { DAILY_NEWS_REVALIDATE_SECONDS, getDailyNews } from '@/lib/daily-news'
 
-export const revalidate = 21600
+export const revalidate = DAILY_NEWS_REVALIDATE_SECONDS
 
 export async function GET() {
 	try {
@@ -22,4 +22,3 @@ export async function GET() {
 		)
 	}
 }
-

@@ -27,7 +27,7 @@ export default function MusicCard() {
 	const styles = cardStyles.musicCard
 	const hiCardStyles = cardStyles.hiCard
 	const clockCardStyles = cardStyles.clockCard
-	const calendarCardStyles = cardStyles.calendarCard
+	const dailyNewsCardStyles = cardStyles.calendarCard
 
 	const tracks = useMemo(() => {
 		const customTracks = siteContent.musicTracks?.filter(track => track?.url?.trim()) || []
@@ -61,9 +61,9 @@ export default function MusicCard() {
 
 		return {
 			x: styles.offsetX !== null ? center.x + styles.offsetX : center.x + CARD_SPACING + hiCardStyles.width / 2 - styles.offset,
-			y: styles.offsetY !== null ? center.y + styles.offsetY : center.y - clockCardStyles.offset + CARD_SPACING + calendarCardStyles.height + CARD_SPACING
+			y: styles.offsetY !== null ? center.y + styles.offsetY : center.y - clockCardStyles.offset + CARD_SPACING + dailyNewsCardStyles.height + CARD_SPACING
 		}
-	}, [isHomePage, center, styles, hiCardStyles, clockCardStyles, calendarCardStyles])
+	}, [isHomePage, center, styles, hiCardStyles, clockCardStyles, dailyNewsCardStyles])
 
 	const { x, y } = position
 

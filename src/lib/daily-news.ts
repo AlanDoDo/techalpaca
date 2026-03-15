@@ -1,6 +1,6 @@
 ﻿import type { DailyNewsAggregateItem, DailyNewsResponse, DailyNewsSourceItem, DailyNewsSourceKey, DailyNewsSourceMeta } from './daily-news-types'
 
-const SIX_HOURS = 60 * 60 * 6
+const TWO_HOURS = 60 * 60 * 2
 const FETCH_TIMEOUT_MS = 8000
 const DEFAULT_LIMIT = 12
 const NEWS_USER_AGENT =
@@ -100,11 +100,11 @@ async function fetchWithTimeout(input: string, init?: RequestInit) {
 	const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
 
 	try {
-		const response = await fetch(input, {
-			...init,
-			signal: controller.signal,
-			next: { revalidate: SIX_HOURS }
-		})
+			const response = await fetch(input, {
+				...init,
+				signal: controller.signal,
+				next: { revalidate: TWO_HOURS }
+			})
 
 		if (!response.ok) {
 			throw new Error(`Request failed: ${response.status}`)
@@ -604,7 +604,7 @@ export async function getDailyNews(): Promise<DailyNewsResponse> {
 
 	return {
 		updatedAt: new Date().toISOString(),
-		refreshIntervalHours: 6,
+		refreshIntervalHours: 2,
 		sources: configs.map(({ attempts: _attempts, ...meta }) => meta),
 		aggregated: dedupeAggregated(allItems).slice(0, 40),
 		sourceBuckets,
@@ -612,4 +612,4 @@ export async function getDailyNews(): Promise<DailyNewsResponse> {
 	}
 }
 
-export const DAILY_NEWS_REVALIDATE_SECONDS = SIX_HOURS
+export const DAILY_NEWS_REVALIDATE_SECONDS = TWO_HOURS

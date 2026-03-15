@@ -150,7 +150,9 @@ export default function NavCard() {
 				)}
 
 				<Link className='flex items-center gap-3' href='/'>
-					<Image src='/images/avatar.png' alt='avatar' width={40} height={40} style={{ boxShadow: '0 12px 20px -5px #E2D9CE' }} className='rounded-full' />
+					<span className='relative block h-10 w-10 shrink-0 overflow-hidden rounded-full' style={{ boxShadow: '0 12px 20px -5px #E2D9CE' }}>
+						<Image src='/images/avatar.png' alt='avatar' fill sizes='40px' className='object-cover' />
+					</span>
 					{form === 'full' && <span className='font-averia mt-1 text-2xl leading-none font-medium'>{siteContent.meta.title}</span>}
 					{form === 'full' && <span className='text-brand mt-2 text-xs font-medium'>(个人主页)</span>}
 				</Link>

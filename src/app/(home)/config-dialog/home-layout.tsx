@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect } from 'react'
 import { useConfigStore, type CardStyles } from '../stores/config-store'
@@ -8,7 +8,7 @@ import cardStylesDefault from '@/config/card-styles-default.json'
 const CARD_LABELS: Record<string, string> = {
 	artCard: '艺术卡片',
 	hiCard: '主人简介',
-	clockCard: '时钟',
+	clockCard: '每日英语',
 	calendarCard: '每日新闻',
 	musicCard: '音乐播放',
 	socialButtons: '社交按钮',
@@ -57,7 +57,7 @@ export function HomeLayout({ cardStylesData, setCardStylesData, onClose }: HomeL
 	}
 
 	const handleReset = () => {
-		setCardStylesData(cardStylesDefault as CardStyles)
+		setCardStylesData(cardStylesDefault as unknown as CardStyles)
 	}
 
 	return (
