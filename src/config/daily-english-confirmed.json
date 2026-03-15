@@ -1,1 +1,19 @@
-[]
+[
+	{
+		"id": "tatoeba-13804719",
+		"english": "I didn't go anywhere on my time off.",
+		"translation": "我假期哪里都没去。",
+		"scenario": "适合在日常交流里表达状态、判断或简单事实。",
+		"reflection": "这类句子适合从“我自己的表达模板”开始积累，先照着说顺，再替换自己的真实场景。",
+		"pronunciation": "i didn't go anywhere on my time off",
+		"tags": [
+			"自我表达",
+			"日常",
+			"口语"
+		],
+		"confirmedAt": "2026-03-15T23:18:04.307Z",
+		"sourceLabel": "Tatoeba Official API",
+		"sourceUrl": "https://api.tatoeba.org/unstable/sentences?lang=eng&trans%3Alang=cmn&limit=18&sort=created",
+		"sourceFallback": false
+	}
+]
