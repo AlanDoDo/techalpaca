@@ -17,19 +17,19 @@
 	},
 	"clockCard": {
 		"width": 318,
-		"height": 166,
+		"height": 170,
 		"offset": 92,
 		"order": 4,
-		"offsetX": 212,
-		"offsetY": -283,
+		"offsetX": 211,
+		"offsetY": -286,
 		"enabled": true
 	},
 	"calendarCard": {
 		"width": 350,
 		"height": 410,
 		"order": 5,
-		"offsetX": 213,
-		"offsetY": -87,
+		"offsetX": 211,
+		"offsetY": -85,
 		"enabled": true
 	},
 	"musicCard": {
@@ -70,7 +70,7 @@
 		"width": 180,
 		"order": 8,
 		"offsetX": 211,
-		"offsetY": -350,
+		"offsetY": -353,
 		"enabled": true
 	},
 	"navCard": {
