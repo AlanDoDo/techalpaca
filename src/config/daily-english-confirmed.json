@@ -1,5 +1,22 @@
 [
 	{
+		"id": "tatoeba-13805339",
+		"english": "I'll be at my dad's bookstore tomorrow afternoon.",
+		"translation": "明天下午我在我爸爸的书店。",
+		"scenario": "适合在日常交流里表达状态、判断或简单事实。",
+		"reflection": "我更偏向先记整句，再理解细节。先让嘴巴会说，语言感通常会比语法分析来得更快。",
+		"pronunciation": "i'll be at my dad's bookstore tomorrow afternoon",
+		"tags": [
+			"日常交流",
+			"句型",
+			"口语"
+		],
+		"confirmedAt": "2026-03-16T12:20:38.279Z",
+		"sourceLabel": "Tatoeba Official API",
+		"sourceUrl": "https://api.tatoeba.org/unstable/sentences?lang=eng&trans%3Alang=cmn&limit=18&sort=created",
+		"sourceFallback": false
+	},
+	{
 		"id": "tatoeba-13804719",
 		"english": "I didn't go anywhere on my time off.",
 		"translation": "我假期哪里都没去。",
