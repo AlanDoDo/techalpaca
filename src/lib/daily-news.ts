@@ -1,18 +1,44 @@
 ﻿import type { DailyNewsAggregateItem, DailyNewsResponse, DailyNewsSourceItem, DailyNewsSourceKey, DailyNewsSourceMeta } from './daily-news-types'
 
 const TWO_HOURS = 60 * 60 * 2
-const FETCH_TIMEOUT_MS = 8000
+const SIX_HOURS = 60 * 60 * 6
+const FETCH_TIMEOUT_MS = 4500
+const SOURCE_TOTAL_TIMEOUT_MS = 5200
+const MEMORY_CACHE_TTL_MS = 10 * 60 * 1000
+const STALE_CACHE_TTL_MS = SIX_HOURS * 1000
 const DEFAULT_LIMIT = 12
+const AGGREGATED_LIMIT = 40
 const NEWS_USER_AGENT =
 	'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36 TechAlpacaNewsBot/1.0'
 
 type FetchAttempt = () => Promise<DailyNewsSourceItem[]>
 
 type LooseRecord = Record<string, any>
+type DailyNewsSourceBuckets = Record<DailyNewsSourceKey, DailyNewsSourceItem[]>
 
 interface DailyNewsSourceConfig extends DailyNewsSourceMeta {
 	attempts: FetchAttempt[]
 }
+
+interface DailyNewsCacheState {
+	data: DailyNewsResponse | null
+	expiresAt: number
+	staleUntil: number
+	inFlight: Promise<DailyNewsResponse> | null
+}
+
+declare global {
+	var __techAlpacaDailyNewsCache: DailyNewsCacheState | undefined
+}
+
+const dailyNewsCache =
+	globalThis.__techAlpacaDailyNewsCache ??
+	(globalThis.__techAlpacaDailyNewsCache = {
+		data: null,
+		expiresAt: 0,
+		staleUntil: 0,
+		inFlight: null
+	})
 
 const SOURCE_META: Record<DailyNewsSourceKey, DailyNewsSourceMeta> = {
 	zhihu: {
@@ -527,19 +553,49 @@ async function runAttempts(attempts: FetchAttempt[]) {
 	throw lastError instanceof Error ? lastError : new Error('No news source available')
 }
 
+function withDeadline<T>(promise: Promise<T>, timeoutMs: number, message: string) {
+	return new Promise<T>((resolve, reject) => {
+		const timer = setTimeout(() => reject(new Error(message)), timeoutMs)
+
+		promise.then(
+			value => {
+				clearTimeout(timer)
+				resolve(value)
+			},
+			error => {
+				clearTimeout(timer)
+				reject(error)
+			}
+		)
+	})
+}
+
+function buildDailyNewsResponse(configs: DailyNewsSourceConfig[], sourceBuckets: DailyNewsSourceBuckets, failedSources: DailyNewsSourceKey[], updatedAt = new Date().toISOString()): DailyNewsResponse {
+	const allItems = Object.values(sourceBuckets).flat()
+
+	return {
+		updatedAt,
+		refreshIntervalHours: 2,
+		sources: configs.map(({ attempts: _attempts, ...meta }) => meta),
+		aggregated: dedupeAggregated(allItems).slice(0, AGGREGATED_LIMIT),
+		sourceBuckets,
+		failedSources
+	}
+}
+
 function createSourceConfigs(): DailyNewsSourceConfig[] {
 	return [
 		{
 			...SOURCE_META.zhihu,
-			attempts: [() => fetchZhihuOfficial(SOURCE_META.zhihu), () => fetchFromDailyHot(SOURCE_META.zhihu, '/zhihu'), () => fetchFromRssHub(SOURCE_META.zhihu, '/zhihu/hotlist')]
+			attempts: [() => fetchFromDailyHot(SOURCE_META.zhihu, '/zhihu'), () => fetchZhihuOfficial(SOURCE_META.zhihu), () => fetchFromRssHub(SOURCE_META.zhihu, '/zhihu/hotlist')]
 		},
 		{
 			...SOURCE_META.douyin,
-			attempts: [() => fetchDouyinOfficial(SOURCE_META.douyin), () => fetchFromDailyHot(SOURCE_META.douyin, '/douyin'), () => fetchFromRssHub(SOURCE_META.douyin, '/douyin/hot')]
+			attempts: [() => fetchFromDailyHot(SOURCE_META.douyin, '/douyin'), () => fetchDouyinOfficial(SOURCE_META.douyin), () => fetchFromRssHub(SOURCE_META.douyin, '/douyin/hot')]
 		},
 		{
 			...SOURCE_META.bilibili,
-			attempts: [() => fetchBilibiliOfficial(SOURCE_META.bilibili), () => fetchFromDailyHot(SOURCE_META.bilibili, '/bilibili'), () => fetchFromRssHub(SOURCE_META.bilibili, '/bilibili/popular/all')]
+			attempts: [() => fetchFromDailyHot(SOURCE_META.bilibili, '/bilibili'), () => fetchBilibiliOfficial(SOURCE_META.bilibili), () => fetchFromRssHub(SOURCE_META.bilibili, '/bilibili/popular/all')]
 		},
 		{
 			...SOURCE_META.wallstreetcn,
@@ -547,11 +603,11 @@ function createSourceConfigs(): DailyNewsSourceConfig[] {
 		},
 		{
 			...SOURCE_META.tieba,
-			attempts: [() => fetchTiebaOfficial(SOURCE_META.tieba), () => fetchFromDailyHot(SOURCE_META.tieba, '/tieba'), () => fetchFromRssHub(SOURCE_META.tieba, '/tieba/hot-search')]
+			attempts: [() => fetchFromDailyHot(SOURCE_META.tieba, '/tieba'), () => fetchTiebaOfficial(SOURCE_META.tieba), () => fetchFromRssHub(SOURCE_META.tieba, '/tieba/hot-search')]
 		},
 		{
 			...SOURCE_META.baidu,
-			attempts: [() => fetchBaiduOfficial(SOURCE_META.baidu), () => fetchFromDailyHot(SOURCE_META.baidu, '/baidu'), () => fetchFromRssHub(SOURCE_META.baidu, '/baidu/top')]
+			attempts: [() => fetchFromDailyHot(SOURCE_META.baidu, '/baidu'), () => fetchBaiduOfficial(SOURCE_META.baidu), () => fetchFromRssHub(SOURCE_META.baidu, '/baidu/top')]
 		},
 		{
 			...SOURCE_META.cls,
@@ -567,27 +623,26 @@ function createSourceConfigs(): DailyNewsSourceConfig[] {
 		},
 		{
 			...SOURCE_META.toutiao,
-			attempts: [() => fetchToutiaoOfficial(SOURCE_META.toutiao), () => fetchFromDailyHot(SOURCE_META.toutiao, '/toutiao'), () => fetchFromRssHub(SOURCE_META.toutiao, '/toutiao/hot')]
+			attempts: [() => fetchFromDailyHot(SOURCE_META.toutiao, '/toutiao'), () => fetchToutiaoOfficial(SOURCE_META.toutiao), () => fetchFromRssHub(SOURCE_META.toutiao, '/toutiao/hot')]
 		},
 		{
 			...SOURCE_META.weibo,
-			attempts: [() => fetchWeiboOfficial(SOURCE_META.weibo), () => fetchFromDailyHot(SOURCE_META.weibo, '/weibo'), () => fetchFromRssHub(SOURCE_META.weibo, '/weibo/search/hot')]
+			attempts: [() => fetchFromDailyHot(SOURCE_META.weibo, '/weibo'), () => fetchWeiboOfficial(SOURCE_META.weibo), () => fetchFromRssHub(SOURCE_META.weibo, '/weibo/search/hot')]
 		}
 	]
 }
 
-export async function getDailyNews(): Promise<DailyNewsResponse> {
-	const configs = createSourceConfigs()
+async function collectDailyNews(configs: DailyNewsSourceConfig[], fallback: DailyNewsResponse | null): Promise<DailyNewsResponse> {
 	const settled = await Promise.allSettled(
 		configs.map(async source => ({
 			key: source.key,
-			items: await runAttempts(source.attempts)
+			items: await withDeadline(runAttempts(source.attempts), SOURCE_TOTAL_TIMEOUT_MS, `${source.key} timed out`)
 		}))
 	)
 
-	const sourceBuckets = {} as Record<DailyNewsSourceKey, DailyNewsSourceItem[]>
+	const sourceBuckets = {} as DailyNewsSourceBuckets
 	const failedSources: DailyNewsSourceKey[] = []
-	const allItems: DailyNewsSourceItem[] = []
+	let freshSourceCount = 0
 
 	for (let index = 0; index < configs.length; index += 1) {
 		const config = configs[index]
@@ -595,21 +650,68 @@ export async function getDailyNews(): Promise<DailyNewsResponse> {
 
 		if (result.status === 'fulfilled') {
 			sourceBuckets[config.key] = result.value.items
-			allItems.push(...result.value.items)
-		} else {
-			sourceBuckets[config.key] = []
+			freshSourceCount += 1
+			continue
+		}
+
+		const fallbackItems = fallback?.sourceBuckets?.[config.key] ?? []
+		sourceBuckets[config.key] = fallbackItems
+
+		if (fallbackItems.length === 0) {
 			failedSources.push(config.key)
 		}
 	}
 
-	return {
-		updatedAt: new Date().toISOString(),
-		refreshIntervalHours: 2,
-		sources: configs.map(({ attempts: _attempts, ...meta }) => meta),
-		aggregated: dedupeAggregated(allItems).slice(0, 40),
-		sourceBuckets,
-		failedSources
+	if (freshSourceCount === 0 && fallback) {
+		return fallback
 	}
+
+	return buildDailyNewsResponse(configs, sourceBuckets, failedSources)
+}
+
+async function refreshDailyNewsCache() {
+	const configs = createSourceConfigs()
+	const nextData = await collectDailyNews(configs, dailyNewsCache.data)
+	const now = Date.now()
+
+	dailyNewsCache.data = nextData
+	dailyNewsCache.expiresAt = now + MEMORY_CACHE_TTL_MS
+	dailyNewsCache.staleUntil = now + STALE_CACHE_TTL_MS
+
+	return nextData
+}
+
+function startDailyNewsRefresh() {
+	if (!dailyNewsCache.inFlight) {
+		dailyNewsCache.inFlight = refreshDailyNewsCache().finally(() => {
+			dailyNewsCache.inFlight = null
+		})
+	}
+
+	return dailyNewsCache.inFlight
+}
+
+export async function getDailyNews(): Promise<DailyNewsResponse> {
+	const now = Date.now()
+
+	if (dailyNewsCache.data && now < dailyNewsCache.expiresAt) {
+		return dailyNewsCache.data
+	}
+
+	if (dailyNewsCache.inFlight) {
+		if (dailyNewsCache.data && now < dailyNewsCache.staleUntil) {
+			return dailyNewsCache.data
+		}
+
+		return dailyNewsCache.inFlight
+	}
+
+	if (dailyNewsCache.data && now < dailyNewsCache.staleUntil) {
+		void startDailyNewsRefresh()
+		return dailyNewsCache.data
+	}
+
+	return startDailyNewsRefresh()
 }
 
 export const DAILY_NEWS_REVALIDATE_SECONDS = TWO_HOURS

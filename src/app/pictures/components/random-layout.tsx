@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { memo, startTransition, useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'motion/react'
 import { useCenterInit, useCenterStore } from '@/hooks/use-center'
 import { Picture } from '../page'
@@ -37,7 +37,6 @@ interface FloatingImageProps {
 	imageIndex: number | 'single'
 	isEditMode?: boolean
 	onDeleteSingle?: (pictureId: string, imageIndex: number | 'single') => void
-	onDeleteGroup?: () => void
 }
 
 type UrlItem = {
@@ -98,6 +97,8 @@ const formatUploadedAt = (uploadedAt?: string) => {
 	return `${year}-${month}-${day} ${hours}:${minutes}`
 }
 
+const imageSizeCache = new Map<string, OriginalSize>()
+
 const loadSavedOffset = (url: string): { x: number; y: number } => {
 	try {
 		const saved = localStorage.getItem(`picture-offset-${url}`)
@@ -119,7 +120,7 @@ const saveOffset = (url: string, offset: { x: number; y: number }) => {
 	}
 }
 
-const FloatingImage = ({
+const FloatingImage = memo(({
 	url,
 	index,
 	groupIndex,
@@ -129,24 +130,23 @@ const FloatingImage = ({
 	pictureId,
 	imageIndex,
 	isEditMode,
-	onDeleteSingle,
-	onDeleteGroup
+	onDeleteSingle
 }: FloatingImageProps) => {
 	const { centerX, centerY } = useCenterStore()
 	const { maxSM, init } = useSize()
 	const bodyRef = useRef(document.body)
 	const mouseDownTimeRef = useRef<number | null>(null)
 	const [zIndex, setZIndex] = useState(index)
-	const [show, setShow] = useState(false)
 	const [dragOffset, setDragOffset] = useState(() => loadSavedOffset(url))
+	const [isImageLoaded, setIsImageLoaded] = useState(() => imageSizeCache.has(url))
+	const [originalSize, setOriginalSize] = useState<OriginalSize | null>(() => imageSizeCache.get(url) ?? null)
 
 	useEffect(() => {
-		setTimeout(() => {
-			setShow(true)
-		}, 200 * index)
-	}, [])
-
-	const [originalSize, setOriginalSize] = useState<OriginalSize | null>(null)
+		if (imageSizeCache.has(url)) {
+			setIsImageLoaded(true)
+			setOriginalSize(imageSizeCache.get(url) ?? null)
+		}
+	}, [url])
 
 	const displaySize = useMemo(() => {
 		if (!originalSize) {
@@ -190,7 +190,7 @@ const FloatingImage = ({
 	const [isZoomed, setIsZoomed] = useState(false)
 	const dragStartOffsetRef = useRef({ x: 0, y: 0 })
 
-	if (!position || !show) return null
+	if (!position) return null
 
 	return (
 		<>
@@ -251,7 +251,7 @@ const FloatingImage = ({
 					left: centerX + position.x,
 					top: centerY + position.y,
 					rotate: position.rotation,
-					scale: 0.6,
+					scale: 0.92,
 					opacity: 0,
 					x: dragOffset.x,
 					y: dragOffset.y
@@ -287,17 +287,31 @@ const FloatingImage = ({
 				}
 				transition={{ type: 'tween', ease: 'easeOut' }}
 				className={cn(
-					'pointer-events-auto absolute origin-center -translate-1/2 cursor-pointer shadow-xl transition-[scale]',
+					'pointer-events-auto absolute origin-center -translate-1/2 cursor-pointer overflow-hidden shadow-xl transition-[scale]',
 					!isEditMode && !isZoomed && 'hover:scale-105'
-				)}>
+				)}
+				style={{ contain: 'layout paint', willChange: 'transform, opacity' }}>
+				<div
+					className={cn(
+						'absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.96),rgba(245,245,245,0.8))] transition-opacity duration-300',
+						isImageLoaded ? 'opacity-0' : 'opacity-100'
+					)}
+				/>
 				<motion.img
 					src={url}
+					loading='lazy'
+					decoding='async'
 					onLoad={event => {
 						const img = event.currentTarget
-						setOriginalSize({ width: img.naturalWidth, height: img.naturalHeight })
+						const nextSize = { width: img.naturalWidth, height: img.naturalHeight }
+						imageSizeCache.set(url, nextSize)
+						startTransition(() => {
+							setOriginalSize(nextSize)
+							setIsImageLoaded(true)
+						})
 					}}
 					draggable={false}
-					className={cn('h-full w-full object-cover select-none')}
+					className={cn('h-full w-full object-cover select-none transition-opacity duration-500', isImageLoaded ? 'opacity-100' : 'opacity-0')}
 				/>
 				{isEditMode && !isZoomed && (
 					<motion.button
@@ -339,7 +353,9 @@ const FloatingImage = ({
 			)}
 		</>
 	)
-}
+})
+
+FloatingImage.displayName = 'FloatingImage'
 
 // 基于唯一标识生成稳定的位置
 // 使用 ref 存储稳定的位置映射
@@ -391,13 +407,6 @@ const getStablePosition = (uniqueId: string, width: number, height: number): Pos
 export const RandomLayout = ({ pictures, isEditMode = false, onDeleteSingle, onDeleteGroup }: RandomLayoutProps) => {
 	useCenterInit()
 	const { width, height } = useCenterStore()
-	const [show, setShow] = useState(false)
-
-	useEffect(() => {
-		setTimeout(() => {
-			setShow(true)
-		}, 1000)
-	}, [])
 
 	const urls = useMemo(() => buildUrlList(pictures), [pictures])
 
@@ -412,8 +421,6 @@ export const RandomLayout = ({ pictures, isEditMode = false, onDeleteSingle, onD
 	if (!urls.length || !width || !height) {
 		return null
 	}
-
-	if (!show) return null
 
 	lastZIndex = urls.length + 11
 
@@ -437,7 +444,6 @@ export const RandomLayout = ({ pictures, isEditMode = false, onDeleteSingle, onD
 						imageIndex={item.imageIndex}
 						isEditMode={isEditMode}
 						onDeleteSingle={onDeleteSingle}
-						onDeleteGroup={picture ? () => onDeleteGroup?.(picture) : undefined}
 					/>
 				)
 			})}

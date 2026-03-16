@@ -8,7 +8,7 @@ import { CARD_SPACING } from '@/consts'
 import MusicSVG from '@/svgs/music.svg'
 import PlaySVG from '@/svgs/play.svg'
 import { HomeDraggableLayer } from '../app/(home)/home-draggable-layer'
-import { Pause } from 'lucide-react'
+import { Loader2, Pause } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import clsx from 'clsx'
 
@@ -43,11 +43,13 @@ export default function MusicCard() {
 	}, [siteContent.musicTracks])
 
 	const [isPlaying, setIsPlaying] = useState(false)
+	const [isPreparing, setIsPreparing] = useState(false)
 	const [currentIndex, setCurrentIndex] = useState(0)
 	const [progress, setProgress] = useState(0)
 	const audioRef = useRef<HTMLAudioElement | null>(null)
 	const currentIndexRef = useRef(0)
 	const isPlayingRef = useRef(false)
+	const hasInitializedPlaybackRef = useRef(false)
 
 	const isHomePage = pathname === '/'
 
@@ -70,6 +72,7 @@ export default function MusicCard() {
 	useEffect(() => {
 		if (!audioRef.current) {
 			audioRef.current = new Audio()
+			audioRef.current.preload = 'none'
 		}
 
 		const audio = audioRef.current
@@ -92,17 +95,39 @@ export default function MusicCard() {
 		}
 
 		const handleLoadedMetadata = () => {
+			setIsPreparing(false)
 			updateProgress()
+		}
+
+		const handleCanPlay = () => {
+			setIsPreparing(false)
+		}
+
+		const handleWaiting = () => {
+			if (isPlayingRef.current) {
+				setIsPreparing(true)
+			}
+		}
+
+		const handleError = () => {
+			setIsPreparing(false)
+			setIsPlaying(false)
 		}
 
 		audio.addEventListener('timeupdate', handleTimeUpdate)
 		audio.addEventListener('ended', handleEnded)
 		audio.addEventListener('loadedmetadata', handleLoadedMetadata)
+		audio.addEventListener('canplay', handleCanPlay)
+		audio.addEventListener('waiting', handleWaiting)
+		audio.addEventListener('error', handleError)
 
 		return () => {
 			audio.removeEventListener('timeupdate', handleTimeUpdate)
 			audio.removeEventListener('ended', handleEnded)
 			audio.removeEventListener('loadedmetadata', handleLoadedMetadata)
+			audio.removeEventListener('canplay', handleCanPlay)
+			audio.removeEventListener('waiting', handleWaiting)
+			audio.removeEventListener('error', handleError)
 		}
 	}, [tracks.length])
 
@@ -115,27 +140,31 @@ export default function MusicCard() {
 
 	useEffect(() => {
 		currentIndexRef.current = currentIndex
-		if (audioRef.current) {
-			const shouldContinuePlayback = isPlayingRef.current
-			audioRef.current.pause()
-			audioRef.current.src = tracks[currentIndex]?.url || ''
-			audioRef.current.loop = false
-			setProgress(0)
+		if (!audioRef.current || !hasInitializedPlaybackRef.current) return
 
-			if (shouldContinuePlayback) {
-				audioRef.current.play().catch(console.error)
-			}
+		const shouldContinuePlayback = isPlayingRef.current
+		audioRef.current.pause()
+		audioRef.current.src = tracks[currentIndex]?.url || ''
+		audioRef.current.loop = false
+		audioRef.current.load()
+		setProgress(0)
+
+		if (shouldContinuePlayback) {
+			setIsPreparing(true)
+			audioRef.current.play().catch(console.error).finally(() => setIsPreparing(false))
 		}
 	}, [currentIndex, tracks])
 
 	useEffect(() => {
-		if (!audioRef.current) return
+		if (!audioRef.current || !hasInitializedPlaybackRef.current) return
 		isPlayingRef.current = isPlaying
 
 		if (isPlaying) {
-			audioRef.current.play().catch(console.error)
+			setIsPreparing(true)
+			audioRef.current.play().catch(console.error).finally(() => setIsPreparing(false))
 		} else {
 			audioRef.current.pause()
+			setIsPreparing(false)
 		}
 	}, [isPlaying])
 
@@ -149,7 +178,19 @@ export default function MusicCard() {
 	}, [])
 
 	const togglePlayPause = () => {
-		setIsPlaying(prev => !prev)
+		const nextPlaying = !isPlaying
+		const currentTrackUrl = tracks[currentIndex]?.url || ''
+
+		if (nextPlaying && audioRef.current && !hasInitializedPlaybackRef.current && currentTrackUrl) {
+			hasInitializedPlaybackRef.current = true
+			audioRef.current.src = currentTrackUrl
+			audioRef.current.loop = false
+			audioRef.current.load()
+			setProgress(0)
+			setIsPreparing(true)
+		}
+
+		setIsPlaying(nextPlaying)
 	}
 
 	if (!isHomePage && !isPlaying) {
@@ -186,8 +227,17 @@ export default function MusicCard() {
 					</div>
 				</div>
 
-				<button onClick={togglePlayPause} className='flex h-10 w-10 items-center justify-center rounded-full bg-white transition-opacity hover:opacity-80'>
-					{isPlaying ? <Pause className='text-brand h-4 w-4' /> : <PlaySVG className='text-brand ml-1 h-4 w-4' />}
+				<button
+					onClick={togglePlayPause}
+					disabled={isPreparing}
+					className='flex h-10 w-10 items-center justify-center rounded-full bg-white transition-opacity hover:opacity-80 disabled:cursor-wait disabled:opacity-70'>
+					{isPreparing ? (
+						<Loader2 className='text-brand h-4 w-4 animate-spin' />
+					) : isPlaying ? (
+						<Pause className='text-brand h-4 w-4' />
+					) : (
+						<PlaySVG className='text-brand ml-1 h-4 w-4' />
+					)}
 				</button>
 			</Card>
 		</HomeDraggableLayer>

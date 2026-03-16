@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import dynamic from 'next/dynamic'
 import { motion } from 'motion/react'
 import { toast } from 'sonner'
 import HiCard from '@/app/(home)/hi-card'
@@ -14,13 +15,15 @@ import WriteButtons from '@/app/(home)/write-buttons'
 import LikePosition from './like-position'
 import HatCard from './hat-card'
 import BeianCard from './beian-card'
-import ConfigDialog from './config-dialog/index'
 import { useSize } from '@/hooks/use-size'
 import { useAuthStore } from '@/hooks/use-auth'
 import { useLayoutEditStore } from './stores/layout-edit-store'
 import { useConfigStore } from './stores/config-store'
 import { pushSiteContent } from './services/push-site-content'
-import SnowfallBackground from '@/layout/backgrounds/snowfall'
+import { useDeferredMount } from '@/hooks/use-deferred-mount'
+
+const ConfigDialog = dynamic(() => import('./config-dialog/index'))
+const SnowfallBackground = dynamic(() => import('@/layout/backgrounds/snowfall'), { ssr: false })
 
 export default function Home() {
 	const { maxSM } = useSize()
@@ -31,6 +34,8 @@ export default function Home() {
 	const cancelEditing = useLayoutEditStore(state => state.cancelEditing)
 	const keyInputRef = useRef<HTMLInputElement>(null)
 	const [isSaving, setIsSaving] = useState(false)
+	const shouldMountDecorations = useDeferredMount(450)
+	const shouldMountConfigDialog = useDeferredMount(700)
 
 	const handleChoosePrivateKey = async (file: File) => {
 		try {
@@ -100,7 +105,7 @@ export default function Home() {
 				}}
 			/>
 
-			{siteContent.enableChristmas && <SnowfallBackground zIndex={0} count={!maxSM ? 125 : 20} />}
+			{shouldMountDecorations && siteContent.enableChristmas && <SnowfallBackground zIndex={0} count={!maxSM ? 125 : 20} />}
 
 			{editing && (
 				<div className='pointer-events-none fixed inset-x-0 top-0 z-50 flex justify-center pt-6'>
@@ -144,8 +149,8 @@ export default function Home() {
 				{cardStyles.beianCard?.enabled !== false && <BeianCard />}
 			</div>
 
-			{siteContent.enableChristmas && <SnowfallBackground zIndex={2} count={!maxSM ? 125 : 20} />}
-			<ConfigDialog open={configDialogOpen} onClose={() => setConfigDialogOpen(false)} />
+			{shouldMountDecorations && siteContent.enableChristmas && <SnowfallBackground zIndex={2} count={!maxSM ? 125 : 20} />}
+			{shouldMountConfigDialog && <ConfigDialog open={configDialogOpen} onClose={() => setConfigDialogOpen(false)} />}
 		</>
 	)
 }
