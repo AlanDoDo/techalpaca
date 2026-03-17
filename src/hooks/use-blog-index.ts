@@ -1,6 +1,7 @@
 import useSWR from 'swr'
 import { useAuthStore } from '@/hooks/use-auth'
 import type { BlogIndexItem } from '@/app/blog/types'
+import { filterRegularBlogItems } from '@/lib/blog-filters'
 
 export type { BlogIndexItem } from '@/app/blog/types'
 
@@ -38,7 +39,8 @@ export function useBlogIndex() {
 export function useLatestBlog() {
 	const { items, loading, error } = useBlogIndex()
 
-	const latestBlog = items.length > 0 ? items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0] : null
+	const latestBlog =
+		filterRegularBlogItems(items).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0] || null
 
 	return {
 		blog: latestBlog,

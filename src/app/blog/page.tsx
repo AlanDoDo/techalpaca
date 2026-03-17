@@ -16,6 +16,7 @@ import { useReadArticles } from '@/hooks/use-read-articles'
 import JuejinSVG from '@/svgs/juejin.svg'
 import { useAuthStore } from '@/hooks/use-auth'
 import { useConfigStore } from '@/app/(home)/stores/config-store'
+import { filterRegularBlogItems, isNoteItem } from '@/lib/blog-filters'
 import { readFileAsText } from '@/lib/file-utils'
 import { cn } from '@/lib/utils'
 import { saveBlogEdits } from './services/save-blog-edits'
@@ -42,18 +43,20 @@ export default function BlogPage() {
 	const [categoryModalOpen, setCategoryModalOpen] = useState(false)
 	const [categoryList, setCategoryList] = useState<string[]>([])
 	const [newCategory, setNewCategory] = useState('')
+	const articleItems = useMemo(() => filterRegularBlogItems(items), [items])
+	const noteItems = useMemo(() => items.filter(isNoteItem), [items])
 
 	useEffect(() => {
 		if (!editMode) {
-			setEditableItems(items)
+			setEditableItems(articleItems)
 		}
-	}, [items, editMode])
+	}, [articleItems, editMode])
 
 	useEffect(() => {
 		setCategoryList(categoriesFromServer || [])
 	}, [categoriesFromServer])
 
-	const displayItems = editMode ? editableItems : items
+	const displayItems = editMode ? editableItems : articleItems
 
 	const { groupedItems, groupKeys, getGroupLabel } = useMemo(() => {
 		const sorted = [...displayItems].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
@@ -244,10 +247,10 @@ export default function BlogPage() {
 	}, [items])
 
 	const handleSave = useCallback(async () => {
-		const removedSlugs = items.filter(item => !editableItems.some(editItem => editItem.slug === item.slug)).map(item => item.slug)
+		const removedSlugs = articleItems.filter(item => !editableItems.some(editItem => editItem.slug === item.slug)).map(item => item.slug)
 		const normalizedCategoryList = categoryList.map(c => c.trim()).filter(Boolean)
 		const categoryListChanged = JSON.stringify(normalizedCategoryList) !== JSON.stringify((categoriesFromServer || []).map(c => c.trim()).filter(Boolean))
-		const categoryAssignmentChanged = items.some(origin => {
+		const categoryAssignmentChanged = articleItems.some(origin => {
 			const next = editableItems.find(editItem => editItem.slug === origin.slug)
 			const originCategory = origin.category || ''
 			const nextCategory = next?.category || ''
@@ -262,7 +265,7 @@ export default function BlogPage() {
 
 		try {
 			setSaving(true)
-			await saveBlogEdits(items, editableItems, normalizedCategoryList)
+			await saveBlogEdits(articleItems, [...noteItems, ...editableItems], normalizedCategoryList)
 			setEditMode(false)
 			setSelectedSlugs(new Set())
 			setCategoryModalOpen(false)
@@ -272,7 +275,7 @@ export default function BlogPage() {
 		} finally {
 			setSaving(false)
 		}
-	}, [items, editableItems, categoryList, categoriesFromServer])
+	}, [articleItems, editableItems, categoryList, categoriesFromServer, noteItems])
 
 	const handleSaveClick = useCallback(() => {
 		if (!isAuth) {
@@ -325,7 +328,7 @@ export default function BlogPage() {
 			/>
 
 			<div className='flex flex-col items-center justify-center gap-6 px-6 pt-24 max-sm:pt-24'>
-				{items.length > 0 && (
+				{articleItems.length > 0 && (
 					<motion.div
 						initial={{ opacity: 0, scale: 0.6 }}
 						animate={{ opacity: 1, scale: 1 }}
@@ -443,7 +446,7 @@ export default function BlogPage() {
 						</motion.div>
 					)
 				})}
-				{items.length > 0 && (
+				{articleItems.length > 0 && (
 					<div className='text-center'>
 						<motion.a
 							initial={{ opacity: 0, scale: 0.6 }}
@@ -461,7 +464,7 @@ export default function BlogPage() {
 			</div>
 
 			<div className='pt-12'>
-				{!loading && items.length === 0 && <div className='text-secondary py-6 text-center text-sm'>暂无文章</div>}
+				{!loading && articleItems.length === 0 && <div className='text-secondary py-6 text-center text-sm'>暂无文章</div>}
 				{loading && <div className='text-secondary py-6 text-center text-sm'>加载中...</div>}
 			</div>
 
