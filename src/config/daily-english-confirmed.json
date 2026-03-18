@@ -1,5 +1,22 @@
 [
 	{
+		"id": "tatoeba-13805337",
+		"english": "I don't like the way Mr. Miller teaches.",
+		"translation": "我不喜歡Miller老師的教學方式。",
+		"scenario": "适合在日常交流里表达状态、判断或简单事实。",
+		"reflection": "这类句子适合从“我自己的表达模板”开始积累，先照着说顺，再替换自己的真实场景。",
+		"pronunciation": "i don't like the way mr miller teaches",
+		"tags": [
+			"自我表达",
+			"日常",
+			"口语"
+		],
+		"confirmedAt": "2026-03-18T08:48:23.894Z",
+		"sourceLabel": "Tatoeba Official API",
+		"sourceUrl": "https://api.tatoeba.org/unstable/sentences?lang=eng&trans%3Alang=cmn&limit=18&sort=created",
+		"sourceFallback": false
+	},
+	{
 		"id": "tatoeba-13805338",
 		"english": "But, we can speak Shanghainese.",
 		"translation": "不过我们会讲上海话。",
