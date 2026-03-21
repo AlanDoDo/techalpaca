@@ -1,5 +1,22 @@
 [
 	{
+		"id": "tatoeba-13805341",
+		"english": "The atmosphere is always extremely lively when eating hot pot.",
+		"translation": "吃火锅的时候 ,气氛往往是非常热闹的.",
+		"scenario": "适合在日常交流里表达状态、判断或简单事实。",
+		"reflection": "我更偏向先记整句，再理解细节。先让嘴巴会说，语言感通常会比语法分析来得更快。",
+		"pronunciation": "the atmosphere is always extremely lively when eating hot pot",
+		"tags": [
+			"日常交流",
+			"句型",
+			"口语"
+		],
+		"confirmedAt": "2026-03-21T07:57:46.102Z",
+		"sourceLabel": "Tatoeba Official API",
+		"sourceUrl": "https://api.tatoeba.org/unstable/sentences?lang=eng&trans%3Alang=cmn&limit=18&sort=created",
+		"sourceFallback": false
+	},
+	{
 		"id": "tatoeba-13805337",
 		"english": "I don't like the way Mr. Miller teaches.",
 		"translation": "我不喜歡Miller老師的教學方式。",
