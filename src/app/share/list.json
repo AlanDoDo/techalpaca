@@ -46,7 +46,8 @@
 		"url": "https://github.com/Ly0n/awesome-robotic-tooling",
 		"description": "一份精选的工具列表，用于使用 C++ 和 Python 进行专业机器人开发，并涵盖 ROS、自动驾驶和航空航天等领域。\n为了避免重复发明轮子，你需要了解轮子本身。这份清单旨在展示软件和硬件开发领域中各种开源免费工具，这些工具在专业机器人开发中非常实用。",
 		"tags": [
-			"开源项目"
+			"开源项目",
+			"机器人"
 		],
 		"stars": 4
 	},
@@ -58,6 +59,16 @@
 		"tags": [
 			"开源项目",
 			"赚钱工具"
+		],
+		"stars": 4
+	},
+	{
+		"name": "PythonRobotics",
+		"logo": "https://atsushisakai.github.io/PythonRobotics/_static/icon.png",
+		"url": "https://atsushisakai.github.io/PythonRobotics/index.html",
+		"description": "这是一个开源软件（OSS）项目：PythonRobotics，它是一套包含机器人算法的Python代码集。",
+		"tags": [
+			"机器人"
 		],
 		"stars": 4
 	}
