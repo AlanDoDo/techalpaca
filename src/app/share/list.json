@@ -71,5 +71,15 @@
 			"机器人"
 		],
 		"stars": 4
+	},
+	{
+		"name": "具身智能社群",
+		"logo": "https://oss-global-cdn.unitree.com/static/530121ef2d62475284c48b4bec648871_450x192.png",
+		"url": "https://www.unifolm.com/",
+		"description": "宇树科技机器人社区",
+		"tags": [
+			"机器人"
+		],
+		"stars": 3
 	}
 ]
