@@ -49,5 +49,16 @@
 			"开源项目"
 		],
 		"stars": 4
+	},
+	{
+		"name": "MoneyPrinter V2",
+		"logo": "https://avatars.githubusercontent.com/u/78088687?v=4",
+		"url": "https://github.com/FujiwaraChoki/MoneyPrinterV2?tab=readme-ov-file",
+		"description": "一款能够自动完成在线赚钱流程的应用程序。MPV2（MoneyPrinter Version 2）顾名思义，是MoneyPrinter项目的第二个版本。它完全重写了原项目，专注于更广泛的功能和更模块化的架构。",
+		"tags": [
+			"开源项目",
+			"赚钱工具"
+		],
+		"stars": 4
 	}
 ]
