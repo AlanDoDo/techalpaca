@@ -26,5 +26,16 @@
 		],
 		"github": "https://github.com/YYsuni/react18-json-view",
 		"npm": "https://www.npmjs.com/package/react18-json-view"
+	},
+	{
+		"name": "TechAlpacaBlog",
+		"year": 2026,
+		"image": "blob:https://techalpaca.vercel.app/98fcbb16-6b8f-416e-a609-d4efd49a3932",
+		"url": "https://techalpaca.vercel.app/",
+		"description": "这是我的个人博客项目，分享一些科技，金融知识，以及一些碎碎念，希望和大家共同进步。",
+		"tags": [
+			"Blog"
+		],
+		"github": "https://github.com/AlanDoDo/techalpaca"
 	}
 ]
