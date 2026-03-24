@@ -36,6 +36,17 @@
     "category": "随笔"
   },
   {
+    "slug": "20260321",
+    "title": "深耕与选择：在将爆未爆的行业里，慢慢拉开差距",
+    "tags": [
+      "行业发展"
+    ],
+    "date": "2026-03-21T21:04",
+    "summary": "选一个趋势正确、还能和自己匹配的方向，然后安静地待上几年，很多事情自然就会发生。",
+    "hidden": false,
+    "category": "随笔"
+  },
+  {
     "slug": "20260317",
     "title": "普通人为什么不适合投资？",
     "tags": [
@@ -50,17 +61,13 @@
     "category": "金融"
   },
   {
-    "slug": "wave-ball",
-    "title": "波浪小球",
-    "tags": [
-      "Threejs",
-      "Shader",
-      "学习"
-    ],
-    "date": "2026-01-14T18:03",
-    "summary": "折腾 Shader",
-    "cover": "/blogs/wave-ball/86d118420c399cdb.webp",
-    "hidden": false
+    "slug": "contact",
+    "title": "找到属于自己的生活方式就好",
+    "tags": [],
+    "date": "2025-11-12T00:48",
+    "summary": "按自己的节奏，慢慢生活就好",
+    "hidden": false,
+    "category": "随笔"
   },
   {
     "slug": "contact",
