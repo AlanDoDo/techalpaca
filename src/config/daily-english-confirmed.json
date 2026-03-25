@@ -1,5 +1,22 @@
 [
 	{
+		"id": "tatoeba-13817136",
+		"english": "Be careful on the way down.",
+		"translation": "下來的時候小心點。",
+		"scenario": "适合在日常交流里表达状态、判断或简单事实。",
+		"reflection": "我更偏向先记整句，再理解细节。先让嘴巴会说，语言感通常会比语法分析来得更快。",
+		"pronunciation": "be careful on the way down",
+		"tags": [
+			"日常交流",
+			"句型",
+			"口语"
+		],
+		"confirmedAt": "2026-03-25T18:22:58.587Z",
+		"sourceLabel": "Tatoeba Official API",
+		"sourceUrl": "https://api.tatoeba.org/unstable/sentences?lang=eng&trans%3Alang=cmn&limit=18&sort=created",
+		"sourceFallback": false
+	},
+	{
 		"id": "tatoeba-13816610",
 		"english": "It's a hospital.",
 		"translation": "那是一家医院。",
