@@ -1,5 +1,22 @@
 [
 	{
+		"id": "tatoeba-13819581",
+		"english": "We agreed to split up the housework.",
+		"translation": "我們同意分擔家務。",
+		"scenario": "适合协作、商量安排，或者在团队沟通里自然开口。",
+		"reflection": "这类句子很适合练“拉别人一起行动”的语气，先整句跟读，再替换其中一个动词会更快上口。",
+		"pronunciation": "we agreed to split up the housework",
+		"tags": [
+			"协作",
+			"表达",
+			"口语"
+		],
+		"confirmedAt": "2026-03-30T22:15:58.940Z",
+		"sourceLabel": "Tatoeba Official API",
+		"sourceUrl": "https://api.tatoeba.org/unstable/sentences?lang=eng&trans%3Alang=cmn&limit=18&sort=created",
+		"sourceFallback": false
+	},
+	{
 		"id": "tatoeba-13817136",
 		"english": "Be careful on the way down.",
 		"translation": "下來的時候小心點。",
