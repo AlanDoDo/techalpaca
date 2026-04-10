@@ -1,5 +1,19 @@
 [
   {
+    "slug": "202604110230",
+    "title": "一文读懂卷积神经网络(CNN)",
+    "tags": [
+      "CNN",
+      "具身智能",
+      "人工智能"
+    ],
+    "date": "2026-04-11T03:32",
+    "summary": "卷积神经网络（Convolutional Neural Network, CNN）",
+    "cover": "/blogs/202604110230/25513db5cca3e5a9.webp",
+    "hidden": false,
+    "category": "具身智能"
+  },
+  {
     "slug": "202604110326",
     "title": "Transformer 模型详解（从“顺序理解”到“全局关系建模”）",
     "tags": [
