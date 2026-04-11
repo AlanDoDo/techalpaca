@@ -1,5 +1,22 @@
 [
 	{
+		"id": "tatoeba-13849270",
+		"english": "The military treatise authored by Sun Tzu is, to this day, required reading in military academies all across the world.",
+		"translation": "孫子所著的兵法，至今仍是各國軍事學院的必讀經典。",
+		"scenario": "适合在日常交流里表达状态、判断或简单事实。",
+		"reflection": "我更偏向先记整句，再理解细节。先让嘴巴会说，语言感通常会比语法分析来得更快。",
+		"pronunciation": "the military treatise authored by sun tzu is to this day required reading in military academies all across the world",
+		"tags": [
+			"日常交流",
+			"句型",
+			"口语"
+		],
+		"confirmedAt": "2026-04-11T08:27:24.980Z",
+		"sourceLabel": "Tatoeba Official API",
+		"sourceUrl": "https://api.tatoeba.org/unstable/sentences?lang=eng&trans%3Alang=cmn&limit=18&sort=created",
+		"sourceFallback": false
+	},
+	{
 		"id": "tatoeba-13819581",
 		"english": "We agreed to split up the housework.",
 		"translation": "我們同意分擔家務。",
